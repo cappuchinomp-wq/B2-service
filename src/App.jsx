@@ -32,12 +32,25 @@ const apiservice = {
 };
 
 const QUICK_ISSUES = [
+    '💡 ไฟฟ้า',  
     '❄️ แอร์',
-    '💡 ไฟฟ้า',
-    '🚿 ห้องน้ำ',
-    '🚪 ประตู',
-    '📺 ทีวี',
-    '🌐 Internet'
+    '💧 ประปา',
+    '🚪 เฟอร์นิเจอร์',
+    '🌐 ไอที / อินเตอร์เน็ต',
+    '🚨 Fire Alarm',
+    '🖌️ งานสี / โครงสร้างอาคาร',
+    '🛠️ อื่นๆ'
+];
+
+const JOB_TYPES = [
+  'ระบบไฟฟ้า',
+  'ระบบแอร์',
+  'ระบบประปา',
+  'เฟอร์นิเจอร์',
+  'ระบบไอที / อินเตอร์เน็ต',
+  'ระบบ Fire Alarm',
+  'งานสี / โครงสร้างอาคาร',
+  'อื่นๆ'
 ];
 
 const PRIORITIES = [
@@ -60,6 +73,7 @@ const PRIORITIES = [
 
 const DEFAULT_FORM = {
     room: '',
+    jobType: '',
     problem: '',
     priority: 'ปกติ'
 };
@@ -142,6 +156,11 @@ export default function B2Service() {
         return false;
       }
 
+      if (!form.jobType.trim()) {
+        alert('กรุณาเลือกประเภทงาน');
+        return false;
+      }
+
       if (!form.problem.trim()) {
         alert('กรุณาระบุปัญหา');
         return false;
@@ -163,6 +182,7 @@ export default function B2Service() {
           userId: profile?.userId || '',
           displayName: profile?.displayName || '',
           room: form.room,
+          jobType: form.jobType,
           problem: form.problem,
           priority: form.priority
         };
@@ -315,6 +335,22 @@ export default function B2Service() {
       ห้อง
       </label>
 
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          ประเภทงาน *
+        </label>
+
+        <div className="grid grid-cols-2 gap-2">
+          {JOB_TYPES.map((type) => (
+            <button key={type} type="button" onClick={() => onchange('jobType', type)}
+            className={`p-3 rounded-xl border text-sm font-medium transition ${
+              form.jobType === type ? 'bg-green-600 text-white border-green-600'
+              : 'bg-white border-gray-300'
+            }`}>{type}</button>
+          ))}
+        </div>
+      </div>
+
       <input type='text' placeholder='เช่น 508' value={form.room} 
       onChange={(e) => onChange('room', e.target.value)}
       className='w-full mt-2 border rounded-2xl p-4'/>
@@ -431,8 +467,14 @@ export default function B2Service() {
         </div>
         </div>
 
-        <div className='mt-3 text-sm'>
+        <div className="mt-3">
+          <div className="text-xs text-gray-500">
+            {job.jobType}
+          </div>
+
+        <div className="text-sm mt-1">
         {job.problem}
+        </div>
         </div>
 
         <div className='mt-3 flex justify-between items-center'>
