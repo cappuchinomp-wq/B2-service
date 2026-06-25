@@ -74,7 +74,6 @@ const DEFAULT_FORM = {
     room: '',
     department: '',
     phone: '',
-    workType: '',
     problem: '',
     remark: '',
     priority: 'ปกติ'
@@ -168,11 +167,6 @@ export default function B2Service() {
         return false;
       }
 
-      if (!form.workType.trim()) {
-        alert('กรุณาเลือกประเภทงาน');
-        return false;
-      }
-
       if (!form.problem.trim()) {
         alert('กรุณาระบุปัญหา');
         return false;
@@ -196,7 +190,6 @@ export default function B2Service() {
           room: form.room,
           department: form.department,
           phone: form.phone,
-          workType: form.workType,
           issueType: selectedIssue,
           problem: form.problem,
           remark: form.remark,
@@ -392,22 +385,6 @@ export default function B2Service() {
 
         <input type='tel' value={form.phone} onChange={(e) => onChange('phone', e.target.value)}
         className='w-full mt-2 border rounded-2xl p-4' placeholder='เช่น 0812345678'/>
-      </div>
-
-      <div className="mb-4">
-        <label className="text-sm font-medium text-gray-600">
-          ประเภทงาน
-        </label>
-
-        <select value={form.workType} onChange={(e) => onChange('workType', e.target.value)}
-        className="w-full mt-2 border rounded-2xl p-4">
-          <option value="">เลือกประเภทงาน</option>
-          {QUICK_ISSUES.map((item) => (
-            <option key={item} value={item}>
-              {item}
-            </option>
-          ))}
-        </select>
       </div>
 
       <div className='mb-4'>
