@@ -74,7 +74,9 @@ const DEFAULT_FORM = {
     room: '',
     department: '',
     phone: '',
+    workType: '',
     problem: '',
+    remark: '',
     priority: 'ปกติ'
 };
 
@@ -166,6 +168,11 @@ export default function B2Service() {
         return false;
       }
 
+      if (!form.workType.trim()) {
+        alert('กรุณาเลือกประเภทงาน');
+        return false;
+      }
+
       if (!form.problem.trim()) {
         alert('กรุณาระบุปัญหา');
         return false;
@@ -189,8 +196,10 @@ export default function B2Service() {
           room: form.room,
           department: form.department,
           phone: form.phone,
+          workType: form.workType,
           issueType: selectedIssue,
           problem: form.problem,
+          remark: form.remark,
           priority: form.priority
         };
 
@@ -372,7 +381,7 @@ export default function B2Service() {
           แผนก
         </label>
 
-        <input type='text' value={form.department} onChange={(e) => onchange('department', e.target.value)}
+        <input type='text' value={form.department} onChange={(e) => onChange('department', e.target.value)}
         className='w-full mt-2 border rounded-2xl p-4' placeholder='เช่น Front Office'/>
       </div>
 
@@ -381,14 +390,39 @@ export default function B2Service() {
           เบอร์ติดต่อ
         </label>
 
-        <input type='tel' value={form.phone} onchange={(e) => onchange('phone', e.target.value)}
+        <input type='tel' value={form.phone} onChange={(e) => onChange('phone', e.target.value)}
         className='w-full mt-2 border rounded-2xl p-4' placeholder='เช่น 0812345678'/>
+      </div>
+
+      <div className="mb-4">
+        <label className="text-sm font-medium text-gray-600">
+          ประเภทงาน
+        </label>
+
+        <select value={form.workType} onchange={(e) => onchange('workType', e.target.value)}
+        className="w-full mt-2 border rounded-2xl p-4">
+          <option value="">เลือกประเภทงาน</option>
+          {WORK_TYPES.map((item) => (
+            <option key={item} value={item}>
+              {item}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className='mb-4'>
       <label className='text-sm font-medium text-gray-600'>
       รายละเอียดปัญหา
       </label>
+
+      <div className="mb-4">
+        <label className="text-sm font-medium text-gray-600">
+          หมายเหตุเพิ่มเติม
+        </label>
+
+        <textarea rows={2} value={form.remark} onchange={(e) => onchange('remark', e.target.value)}
+        className="w-full mt-2 border rounded-2xl p-4" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)"/>
+      </div>
 
       <textarea rows={4} value={form.problem} 
       onChange={(e) => onChange('problem', e.target.value)}
