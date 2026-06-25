@@ -19,7 +19,7 @@ const apiservice = {
 
     async getWorkOrders() {
     return this.request(
-      `${CONFIG.API_URL}?action=getWorkOrder`
+      `${CONFIG.API_URL}?action=getWorkOrders`
     );
     },
 
@@ -72,6 +72,8 @@ const PRIORITIES = [
 
 const DEFAULT_FORM = {
     room: '',
+    department: '',
+    phone: '',
     problem: '',
     priority: 'ปกติ'
 };
@@ -154,6 +156,16 @@ export default function B2Service() {
         return false;
       }
 
+      if (!form.department.trim()) {
+        alert('กรุณาระบุแผนก');
+        return false;
+      }
+
+      if (!form.phone.trim()) {
+        alert('กรุณาระบุเบอร์ติดต่อ');
+        return false;
+      }
+
       if (!form.problem.trim()) {
         alert('กรุณาระบุปัญหา');
         return false;
@@ -175,9 +187,11 @@ export default function B2Service() {
           userId: profile?.userId || '',
           displayName: profile?.displayName || '',
           room: form.room,
+          department: form.department,
+          phone: form.phone,
+          issueType: selectedIssue,
           problem: form.problem,
-          priority: form.priority,
-          issueType: selectIssue
+          priority: form.priority
         };
 
         const result = await apiservice.createWorkOrder(payload);
@@ -354,7 +368,24 @@ export default function B2Service() {
       </div>
 
       <div className='mb-4'>
-      
+        <label className='text-sm font-medium text-gray-600'>
+          แผนก
+        </label>
+
+        <input type='text' value={form.department} onChange={(e) => onchange('department', e.target.value)}
+        className='w-full mt-2 border rounded-2xl p-4' placeholder='เช่น Front Office'/>
+      </div>
+
+      <div className='mb-4'>
+        <label className='text-sm font-medium text-gray-600'>
+          เบอร์ติดต่อ
+        </label>
+
+        <input type='tel' value={form.phone} onchange={(e) => onchange('phone', e.target.value)}
+        className='w-full mt-2 border rounded-2xl p-4' placeholder='เช่น 0812345678'/>
+      </div>
+
+      <div className='mb-4'>
       <label className='text-sm font-medium text-gray-600'>
       รายละเอียดปัญหา
       </label>
