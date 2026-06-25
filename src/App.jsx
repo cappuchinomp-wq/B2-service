@@ -7,27 +7,37 @@ const CONFIG = {
 };
 
 const apiservice = {
-    async getWorkOrders() {
-        const response = await fetch(
-            `${CONFIG.API_URL}?action=getWorkOrders`
-        );
+    async request(url, options = {}) {
+        const response = await fetch(url, options);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
 
         return response.json();
     },
 
-    async createWorkOrder(payload) {
-        const response = await fetch(
-            CONFIG.API_URL,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            }
-        );
+    async getWorkOrders() {
+    return this.request(
+      `${CONFIG.API_URL}?action=getWorkOrder`
+    );
+    },
 
-        return response.json();
+    async createWorkOrder(payload) {
+      const formData = new URLSearchParams();
+
+      Object.entries(payload).forEach(([key, value]) => {
+        formData.append(key, value ?? '');
+      });
+
+      const response = await fetch(
+        CONFIG.API_URL,
+        {
+          method: 'POST',
+          body: formData
+        }
+      );
+      return response.json();
     }
 };
 
