@@ -399,10 +399,10 @@ export default function B2Service() {
           ประเภทงาน
         </label>
 
-        <select value={form.workType} onchange={(e) => onchange('workType', e.target.value)}
+        <select value={form.workType} onChange={(e) => onChange('workType', e.target.value)}
         className="w-full mt-2 border rounded-2xl p-4">
           <option value="">เลือกประเภทงาน</option>
-          {WORK_TYPES.map((item) => (
+          {QUICK_ISSUES.map((item) => (
             <option key={item} value={item}>
               {item}
             </option>
@@ -420,7 +420,7 @@ export default function B2Service() {
           หมายเหตุเพิ่มเติม
         </label>
 
-        <textarea rows={2} value={form.remark} onchange={(e) => onchange('remark', e.target.value)}
+        <textarea rows={2} value={form.remark} onChange={(e) => onChange('remark', e.target.value)}
         className="w-full mt-2 border rounded-2xl p-4" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)"/>
       </div>
 
