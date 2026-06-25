@@ -72,10 +72,10 @@ const PRIORITIES = [
 
 const DEFAULT_FORM = {
     room: '',
+    area: '',
     department: '',
     phone: '',
     problem: '',
-    remark: '',
     priority: 'ปกติ'
 };
 
@@ -148,12 +148,16 @@ export default function B2Service() {
 
     function selectIssue(issue) {
       setSelectedIssue(issue);
-      updateForm('problem', issue);
     }
 
     function validateForm() {
       if (!form.room.trim()) {
         alert('กรุณาระบุห้อง');
+        return false;
+      }
+
+      if (!form.area.trim()) {
+        alert('กรุณาระบุพื้นที่ / อาคาร')
         return false;
       }
 
@@ -188,11 +192,11 @@ export default function B2Service() {
           userId: profile?.userId || '',
           displayName: profile?.displayName || '',
           room: form.room,
+          area: form.area,
           department: form.department,
           phone: form.phone,
           issueType: selectedIssue,
           problem: form.problem,
-          remark: form.remark,
           priority: form.priority
         };
 
@@ -350,6 +354,15 @@ export default function B2Service() {
       </div>
 
       <div className='mb-4'>
+        <label className='text-sm font-medium text-gray-600'>
+          พื้นที่ / อาคาร
+        </label>
+
+        <input type='text' value={form.area} onChange={(e) => onChange('area', e.target.value)}
+        className='w-full mt-2 border rounded-2xl p-4' placeholder='เช่น อาคาร A'/>
+        </div>
+
+      <div className='mb-4'>
       
       <label className='text-sm font-medium text-gray-600'>
       ประเภทปัญหา
@@ -391,15 +404,6 @@ export default function B2Service() {
       <label className='text-sm font-medium text-gray-600'>
       รายละเอียดปัญหา
       </label>
-
-      <div className="mb-4">
-        <label className="text-sm font-medium text-gray-600">
-          หมายเหตุเพิ่มเติม
-        </label>
-
-        <textarea rows={2} value={form.remark} onChange={(e) => onChange('remark', e.target.value)}
-        className="w-full mt-2 border rounded-2xl p-4" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)"/>
-      </div>
 
       <textarea rows={4} value={form.problem} 
       onChange={(e) => onChange('problem', e.target.value)}
