@@ -176,7 +176,8 @@ export default function B2Service() {
           displayName: profile?.displayName || '',
           room: form.room,
           problem: form.problem,
-          priority: form.priority
+          priority: form.priority,
+          issueType: selectIssue
         };
 
         const result = await apiservice.createWorkOrder(payload);
