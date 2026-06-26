@@ -111,6 +111,7 @@ export default function B2Service() {
     const [jobs, setJobs] = useState([]);
     const [form, setForm] = useState(DEFAULT_FORM);
     const [selectedIssue, setSelectedIssue] = useState('');
+    const [images, setImages] = useState([]);
 
     useEffect(() => {
         initializeLIFF();
@@ -204,6 +205,28 @@ export default function B2Service() {
       return true;
     }
 
+    async function handleImageChange(event) {
+      const files = Array.form(event.target.files || []);
+
+      const imageList = await Promise.all(
+        files.map(file => {
+          return new Promise((resolve) => {
+            const reader = new FileReader();
+
+            reader.onload = () => {
+              resolve({
+                name: file.name,
+                type: file.type,
+                data: reader.result
+              });
+            };
+            reader.readAsDataURL(file);
+          });
+        })
+      );
+      setImages(imageList);
+    }
+
     async function submitWorkOrder() {
 
       try {
@@ -223,7 +246,8 @@ export default function B2Service() {
           phone: form.phone,
           issueType: selectedIssue,
           problem: form.problem,
-          priority: form.priority
+          priority: form.priority,
+          images: JSON.stringify(images)
         };
 
         const result = await apiservice.createWorkOrder(payload);
@@ -254,6 +278,7 @@ export default function B2Service() {
     function resetForm() {
       setForm(DEFAULT_FORM);
       setSelectedIssue('');
+      setImages([]);
 
     }
 
@@ -270,6 +295,8 @@ export default function B2Service() {
       form={form}
       loading={loading}
       selectedIssue={selectedIssue}
+      images={images}
+      onImageChange={handleImageChange}
       onChange={updateForm}
       onSelectIssue={selectIssue}
       onSubmit={submitWorkOrder}/>
@@ -349,6 +376,8 @@ export default function B2Service() {
     form,
     loading,
     selectedIssue,
+    images,
+    onImageChange,
     onChange,
     onSelectIssue,
     onSubmit
@@ -453,6 +482,25 @@ export default function B2Service() {
       onChange={(e) => onChange('problem', e.target.value)}
       className='w-full mt-2 border rounded-2xl p-4'
       placeholder='อธิบายปัญหาเพิ่มเติม'/>
+      </div>
+
+      <div className="mb-5">
+        <label className="text-sm font-medium text-gray-600">
+          แนบรูปภาพ
+        </label>
+
+        <input type="file" multiple accept="image/*" onChange={onImageChange} className="w-full mt-2 border rounded-2xl p-3"/>
+
+        {images.length > 0 && (
+          <div className="grid grid-cols-3 gap-2 mt-3">
+            {images.map((images, index) => (
+
+              <img key={index} src={Image.data} alt={Image.name} className="rounded-xl h-24 w-full object-cover"/>
+              
+              ))}
+
+              </div>
+        )}
       </div>
 
       <div className='mb-5'>
