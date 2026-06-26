@@ -52,20 +52,46 @@ const QUICK_ISSUES = [
     '🛠️ อื่นๆ'
 ];
 
+const AREAS = [
+  'ห้องพัก',
+  'ลอบบี้',
+  'ห้องประชุม / จัดเลี้ยง',
+  'ห้องน้ำส่วนกลาง',
+  'ออฟฟิศ',
+  'สโตร์เก็บของ',
+  'อื่นๆ'
+];
+
+const DEPARTMENT = [
+  'พนักงานต้อนรับ (GSA)',
+  'แม่บ้าน',
+  'ช่างอาคาร',
+  'พนักงานรักษาความปลอดภัย',
+  'บัญชี',
+  'ผู้จัดการโรงแรม (HM)',
+  'Owner',
+  'อื่นๆ'
+];
+
 const PRIORITIES = [
     {
-    label: 'ด่วน',
-    value: 'ด่วน',
+    label: 'Critical - กระทบความปลอดภัย / ห้องขายไม่ได้',
+    value: 'Critical - กระทบความปลอดภัย / ห้องขายไม่ได้',
     activeClass: 'bg-red-100 text-red-700'    
     },
     {
-        label: 'ปานกลาง',
-        value: 'ปานกลาง',
+      label: 'Hight - กระทบแขกโดยตรง',
+      value: 'Hight - กระทบแขกโดยตรง',
+      activeClass: 'bg-orange-100 text-orange-700'
+    },
+    {
+        label: 'Medium - ใช้งานได้แต่ไม่สมบูรณ์',
+        value: 'Medium - ใช้งานได้แต่ไม่สมบูรณ์',
         activeClass: 'bg-yellow-100 text-yellow-700'
     },
     {
-        label: 'ปกติ',
-        value: 'ปกติ',
+        label: 'Low - งานทั่วไป',
+        value: 'Low - งานทั่วไป',
         activeClass: 'bg-green-100 text-green-700'
     }
 ];
@@ -76,7 +102,7 @@ const DEFAULT_FORM = {
     department: '',
     phone: '',
     problem: '',
-    priority: 'ปกติ'
+    priority: ''
 };
 
 export default function B2Service() {
@@ -358,14 +384,23 @@ export default function B2Service() {
           พื้นที่ / อาคาร
         </label>
 
-        <input type='text' value={form.area} onChange={(e) => onChange('area', e.target.value)}
-        className='w-full mt-2 border rounded-2xl p-4' placeholder='เช่น อาคาร A'/>
+        <select value={form.area} onChange={(e) => onChange('area', e.target.value)}
+        className="w-full mt-2 border rounded-2xl p-4 bg-white">
+          <option value="">
+            เลือกพื้นที่ / อาคาร
+          </option>
+          {AREAS.map(area => (
+            <option key={area} value={area}>
+              {area}
+            </option>
+          ))}
+        </select>
         </div>
 
       <div className='mb-4'>
       
       <label className='text-sm font-medium text-gray-600'>
-      ประเภทปัญหา
+      ประเภทงาน
       </label>
 
       <div className='grid grid-cols-2 gap-3 mt-3'>
@@ -387,8 +422,17 @@ export default function B2Service() {
           แผนก
         </label>
 
-        <input type='text' value={form.department} onChange={(e) => onChange('department', e.target.value)}
-        className='w-full mt-2 border rounded-2xl p-4' placeholder='เช่น Front Office'/>
+        <select value={form.department} onChange={(e) => onChange('department', e.target.value)}
+        className="w-full mt-2 border rounded-2xl p-4 bg-white">
+          <option value="">
+            เลือกแผนก
+          </option>
+          {DEPARTMENT.map(department => (
+            <option key={department} value={department}>
+              {department}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className='mb-4'>
@@ -402,7 +446,7 @@ export default function B2Service() {
 
       <div className='mb-4'>
       <label className='text-sm font-medium text-gray-600'>
-      รายละเอียดปัญหา
+      รายละเอียดอาการเสีย
       </label>
 
       <textarea rows={4} value={form.problem} 
@@ -414,7 +458,7 @@ export default function B2Service() {
       <div className='mb-5'>
       
       <label className='text-sm font-medium text-gray-600'>
-      ความเร่งด่วน
+      ระดับความเร่งด่วน
       </label>
 
       <div className='grid grid-cols-3 gap-3 mt-3'>
