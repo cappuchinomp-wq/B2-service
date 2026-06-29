@@ -6,14 +6,14 @@ const CONFIG = {
     API_URL: 'https://script.google.com/macros/s/AKfycbzSWSlsKkbMjBixQ-6yZGk9QzPNg4rsaHMBP6epukc4cqiag6RdwwJO_LBtriZLy3akfQ/exec'
 };
 
-const apiservice = {
+const apiService = {
     async request(url, options = {}) {
       try {
-        const response = await.fetch(url, {
+        const response = await fetch(url, {
           method: options.method || "GET",
-          hearders: {
+          headers: {
             Accept: "application/json",
-            ...AREAS(options.hearders || {})
+            ...(options.headers || {})
           },
           ...options
         });
@@ -25,34 +25,31 @@ const apiservice = {
         return await response.json();
       } catch (error) {
         console.error("API Error:", error);
-        throw new Error(
-          "Unable to connect to Google Apps Script"
-        );
+        throw error;
       }
     },
 
-    async getWorkOrders() {
+   getWorkOrders() {
     return this.request(
       `${CONFIG.API_URL}?action=getWorkOrders`
     );
     },
 
-    async createWorkOrder(payload) {
+   createWorkOrder(payload) {
       const formData = new URLSearchParams();
 
-      Object.entries(payload).forEach(([key, value]) => {
-        formData.append(key, value ?? '');
-      });
-
-      const response = await fetch(
-        CONFIG.API_URL,
-        {
-          method: 'POST',
-          body: formData
-        }
+      Object.entries(payload).forEach(([key, value]) => 
+        formData.append(key, value ?? "")
       );
-      return response.json();
-    }
+      return this.request(CONFIG.API_URL,{
+        method: "POST",
+        headers: {
+          "Content-Type":
+          "application/x-www-form-urlencoded"
+        },
+        body: formData
+      });
+}
 };
 
 const QUICK_ISSUES = [
@@ -111,12 +108,13 @@ const PRIORITIES = [
 ];
 
 const DEFAULT_FORM = {
-    room: '',
-    area: '',
-    department: '',
-    phone: '',
-    problem: '',
-    priority: ''
+    room: "",
+    area: "",
+    department: "",
+    phone: "",
+    problem: "",
+    priority: "",
+    issueType: ""
 };
 
 export default function B2Service() {
@@ -133,10 +131,10 @@ export default function B2Service() {
 
     const kpi = useMemo(() => {
       const pending = jobs.filter(
-        job => job.priority !== 'เสร็จสิ้น'
-      ).length
+        job => job.status !== "เสร็จสิ้น"
+      ).length;
       const urgent = jobs.filter(
-        job => job.priority === 'ด่วน'
+        job => job.priority.includes("Critical")
       ).length;
 
       return {
@@ -173,10 +171,14 @@ export default function B2Service() {
       
       try {
         const result =
-        await apiservice.getWorkOrders();
-        setJobs(result.data || []);
+        await apiService.getWorkOrders();
+        if (!result.success) {
+          throw new Error(result.message);
+        }
+        setJobs(result.data ?? []);
       } catch (error) {
         console.error(error);
+        setJobs([]);
       }
     }
 
@@ -189,6 +191,10 @@ export default function B2Service() {
 
     function selectIssue(issue) {
       setSelectedIssue(issue);
+      updateForm(
+        "issueType",
+        issue
+      )
     }
 
     function validateForm() {
@@ -266,10 +272,10 @@ export default function B2Service() {
           issueType: selectedIssue,
           problem: form.problem,
           priority: form.priority,
-          images: JSON.stringify(images)
+          images: images.length ? JSON.stringify(images) : "[]"
         };
 
-        const result = await apiservice.createWorkOrder(payload);
+        const result = await apiService.createWorkOrder(payload);
 
         if (!result.success) {
           throw new Error(
@@ -286,7 +292,7 @@ export default function B2Service() {
       }catch (error){
         console.error(error);
 
-        alert('ไม่สามารถแจ้งซ่อมได้');
+        alert(error.message || "ไม่สามารถเชื่อมต่อ Server");
 
       }finally{
 
@@ -296,9 +302,9 @@ export default function B2Service() {
 
     function resetForm() {
       setForm(DEFAULT_FORM);
-      setSelectedIssue('');
+      setSelectedIssue("");
       setImages([]);
-
+      document.querySelector('input[type="file"]')?.value = "";
     }
 
     return (
