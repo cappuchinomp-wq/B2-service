@@ -206,23 +206,29 @@ export default function B2Service() {
     }
 
     async function handleImageChange(event) {
-      const files = Array.form(event.target.files || []);
+      const files = Array.from(event.target.files ?? []);
+
+      if (!files.length) {
+        setImages([]);
+        return;
+      }
 
       const imageList = await Promise.all(
-        files.map(file => {
-          return new Promise((resolve) => {
+        files.map(
+          file => 
+          new Promise(resolve => {
             const reader = new FileReader();
 
-            reader.onload = () => {
+            reader.onload = ({target}) => {
               resolve({
                 name: file.name,
                 type: file.type,
-                data: reader.result
+                data: target.result
               });
             };
             reader.readAsDataURL(file);
-          });
-        })
+          })
+        )
       );
       setImages(imageList);
     }
@@ -371,7 +377,7 @@ export default function B2Service() {
       </div>      
     );
   }
-
+  
   function RepairForm({
     form,
     loading,
@@ -493,7 +499,7 @@ export default function B2Service() {
 
         {images.length > 0 && (
           <div className="grid grid-cols-3 gap-2 mt-3">
-            {images.map((images, index) => (
+            {images.map((image, index) => (
 
               <img key={index} src={Image.data} alt={Image.name} className="rounded-xl h-24 w-full object-cover"/>
               
