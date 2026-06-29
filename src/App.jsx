@@ -8,13 +8,27 @@ const CONFIG = {
 
 const apiservice = {
     async request(url, options = {}) {
-        const response = await fetch(url, options);
-
+      try {
+        const response = await.fetch(url, {
+          method: options.method || "GET",
+          hearders: {
+            Accept: "application/json",
+            ...AREAS(options.hearders || {})
+          },
+          ...options
+        });
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+          throw new Error(
+            `HTTP ${response.status}`
+          );
         }
-
-        return response.json();
+        return await response.json();
+      } catch (error) {
+        console.error("API Error:", error);
+        throw new Error(
+          "Unable to connect to Google Apps Script"
+        );
+      }
     },
 
     async getWorkOrders() {
