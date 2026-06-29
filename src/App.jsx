@@ -214,21 +214,20 @@ export default function B2Service() {
       }
 
       const imageList = await Promise.all(
-        files.map(
-          file => 
-          new Promise(resolve => {
+        files.map((file) => {
+          return new Promise((resolve) => {
             const reader = new FileReader();
 
-            reader.onload = ({target}) => {
+            reader.onload = (event) => {
               resolve({
                 name: file.name,
                 type: file.type,
-                data: target.result
+                data: event.target?.result ?? ""
               });
             };
             reader.readAsDataURL(file);
-          })
-        )
+          });
+        })
       );
       setImages(imageList);
     }
@@ -501,7 +500,7 @@ export default function B2Service() {
           <div className="grid grid-cols-3 gap-2 mt-3">
             {images.map((image, index) => (
 
-              <img key={index} src={Image.data} alt={Image.name} className="rounded-xl h-24 w-full object-cover"/>
+              <img key={index} src={image.data} alt={image.name} className="rounded-xl h-24 w-full object-cover"/>
               
               ))}
 
