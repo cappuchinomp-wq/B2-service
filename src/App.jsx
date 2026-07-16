@@ -38,9 +38,13 @@ const apiService = {
    createWorkOrder(payload) {
       const formData = new URLSearchParams();
 
-      Object.entries(payload).forEach(([key, value]) => 
-        formData.append(key, value ?? "")
-      );
+      Object.entries(payload).forEach(([key, value]) => {
+        if (value === undefined || value === null) {
+          formData.append(key, "");
+          return;
+        }  
+        formData.append(key, String(value));
+   });
       return this.request(CONFIG.API_URL,{
         method: "POST",
         headers: {
@@ -225,6 +229,37 @@ export default function B2Service() {
       return true;
     }
 
+         
+function resizeImage(file) {
+  return new Promise((resolve) => {
+    const img = new Image();
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      img.src = e.target.result;
+    };
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const maxWidth = 1280;
+      const scale = maxWidth / img.width;
+      canvas.width = maxWidth;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getConText("2d");
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      resolve({
+        name: file.name,
+        type: "image/jpeg",
+        data: canvas.toDataURL("image/jpeg", 0.7)
+      });
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
     async function handleImageChange(event) {
       const files = Array.from(event.target.files ?? []);
 
@@ -234,22 +269,13 @@ export default function B2Service() {
       }
 
       const imageList = await Promise.all(
-        files.map((file) => {
-          return new Promise((resolve) => {
-            const reader = new FileReader();
-
-            reader.onload = (event) => {
-              resolve({
-                name: file.name,
-                type: file.type,
-                data: event.target?.result ?? ""
-              });
-            };
-            reader.readAsDataURL(file);
-          });
-        })
+        files.map(file => resizeImage(file))
       );
       setImages(imageList);
+      useEffect(() => {
+        console.log("Images Updated");
+        console.log(images);
+      }, [images]);
     }
 
     async function submitWorkOrder() {
@@ -274,6 +300,10 @@ export default function B2Service() {
           priority: form.priority,
           images: images.length ? JSON.stringify(images) : "[]"
         };
+
+        console.log("Payload =", payload);
+        console.log("Images =", images);
+        console.log("Images JSON =", JSON.stringify(images));
 
         const result = await apiService.createWorkOrder(payload);
 
