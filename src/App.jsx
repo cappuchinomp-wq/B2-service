@@ -309,6 +309,7 @@ function resizeImage(file) {
         console.log("Payload =", payload);
         console.log("Images =", images);
         console.log("Images JSON =", JSON.stringify(images));
+        console.log(payload.images);
 
         const result = await apiService.createWorkOrder(payload);
 
