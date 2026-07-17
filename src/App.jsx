@@ -285,8 +285,11 @@ function resizeImage(file) {
 
     async function submitWorkOrder() {
 
+      console.log("STEP 1");
+
       try {
         if (!validateForm()) {
+          console.log("STEP 2");
           return;
         }
 
@@ -294,6 +297,7 @@ function resizeImage(file) {
 
         console.log(images.length);
         console.log(images[0]);
+        console.log("STEP 3");
 
         const payload = {
           action: 'createWorkOrder',
@@ -308,7 +312,7 @@ function resizeImage(file) {
           priority: form.priority,
           images: images.length ? JSON.stringify(images) : "[]"
         };
-
+        console.log("STEP 4");
         console.log("Payload =", payload);
         console.log("Images =", images);
         console.log("Images JSON =", JSON.stringify(images));
