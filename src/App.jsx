@@ -3,7 +3,7 @@ import liff from '@line/liff';
 
 const CONFIG = {
     LIFF_ID: '2010077744-5kECosJ0',
-    API_URL: 'https://script.google.com/macros/s/AKfycbzSWSlsKkbMjBixQ-6yZGk9QzPNg4rsaHMBP6epukc4cqiag6RdwwJO_LBtriZLy3akfQ/exec'
+    API_URL: "https://script.google.com/macros/s/AKfycbzSWSlsKkbMjBixQ-6yZGk9QzPNg4rsaHMBP6epukc4cqiag6RdwwJO_LBtriZLy3akfQ/exec"
 };
 
 const apiService = {
@@ -128,6 +128,10 @@ export default function B2Service() {
     const [form, setForm] = useState(DEFAULT_FORM);
     const [selectedIssue, setSelectedIssue] = useState('');
     const [images, setImages] = useState([]);
+
+    useEffect(() => {
+      initializeLIFF();
+    }, []);
 
     useEffect(() => {
         console.log("Images =", images);
@@ -269,10 +273,9 @@ function resizeImage(file) {
       }
 
       const imageList = await Promise.all(
-        files.map(file => resizeImage(file)),
-        files.map(file => {
+        files.map(async file => {
           console.log("Resize :", file.name);
-          return resizeImage(file);
+          return await resizeImage(file);
         })
       );
       console.log(imageList);
