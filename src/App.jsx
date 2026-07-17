@@ -9,6 +9,7 @@ const CONFIG = {
 const apiService = {
     async request(url, options = {}) {
       try {
+        console.log(options.body);
         const response = await fetch(url, {
           method: options.method || "GET",
           headers: {
