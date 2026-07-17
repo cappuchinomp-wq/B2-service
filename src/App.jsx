@@ -130,8 +130,8 @@ export default function B2Service() {
     const [images, setImages] = useState([]);
 
     useEffect(() => {
-        initializeLIFF();
-    }, []);
+        console.log("Images =", images);
+    }, [images]);
 
     const kpi = useMemo(() => {
       const pending = jobs.filter(
@@ -243,10 +243,10 @@ function resizeImage(file) {
     img.onload = () => {
       const canvas = document.createElement("canvas");
       const maxWidth = 1280;
-      const scale = maxWidth / img.width;
-      canvas.width = maxWidth;
+      const scale = Math.min(1, maxWidth / img.width);
+      canvas.width = img.width * scale;
       canvas.height = img.height * scale;
-      const ctx = canvas.getConText("2d");
+      const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
       resolve({
@@ -269,13 +269,15 @@ function resizeImage(file) {
       }
 
       const imageList = await Promise.all(
-        files.map(file => resizeImage(file))
+        files.map(file => resizeImage(file)),
+        files.map(file => {
+          console.log("Resize :", file.name);
+          return resizeImage(file);
+        })
       );
+      console.log(imageList);
       setImages(imageList);
-      useEffect(() => {
-        console.log("Images Updated");
-        console.log(images);
-      }, [images]);
+     
     }
 
     async function submitWorkOrder() {
@@ -286,6 +288,9 @@ function resizeImage(file) {
         }
 
         setLoading(true);
+
+        console.log(images.length);
+        console.log(images[0]);
 
         const payload = {
           action: 'createWorkOrder',
