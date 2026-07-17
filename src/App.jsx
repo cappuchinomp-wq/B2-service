@@ -37,26 +37,15 @@ const apiService = {
     },
 
    createWorkOrder(payload) {
-      const formData = new URLSearchParams();
-
-      Object.entries(payload).forEach(([key, value]) => {
-        if (value === undefined || value === null) {
-          formData.append(key, "");
-          return;
-        }  
-        formData.append(key, String(value));
-   });
-      return this.request(CONFIG.API_URL,{
-        method: "POST",
-        headers: {
-          "Content-Type":
-          "application/x-www-form-urlencoded"
-        },
-        body: formData
-      });
-}
-};
-
+    return this.request(CONFIG.API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+   }
+  };
 const QUICK_ISSUES = [
     '💡 ไฟฟ้า',  
     '❄️ แอร์',
@@ -247,7 +236,7 @@ function resizeImage(file) {
 
     img.onload = () => {
       const canvas = document.createElement("canvas");
-      const maxWidth = 1280;
+      const maxWidth = 960;
       const scale = Math.min(1, maxWidth / img.width);
       canvas.width = img.width * scale;
       canvas.height = img.height * scale;
@@ -257,7 +246,7 @@ function resizeImage(file) {
       resolve({
         name: file.name,
         type: "image/jpeg",
-        data: canvas.toDataURL("image/jpeg", 0.7)
+        data: canvas.toDataURL("image/jpeg", 0.6)
       });
     };
 
@@ -273,12 +262,10 @@ function resizeImage(file) {
         return;
       }
 
-      const imageList = await Promise.all(
-        files.map(async file => {
-          console.log("Resize :", file.name);
-          return await resizeImage(file);
-        })
-      );
+      const imageList = (await Promise.all(
+        files.map(file => resizeImage(file))
+        )
+      ).filter(Boolean);
       console.log(imageList);
       setImages(imageList);
      
@@ -311,7 +298,9 @@ function resizeImage(file) {
           issueType: selectedIssue,
           problem: form.problem,
           priority: form.priority,
-          images: images.length ? JSON.stringify(images) : "[]"
+          images: images.length 
+          ? images
+          : []
         };
         console.log("STEP 4");
         console.log("Payload =", payload);
