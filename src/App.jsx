@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState} from "react";
 import liff from '@line/liff';
 
 const CONFIG = {
-    LIFF_ID: '2010077744-5kECosJ0',
+    LIFF_ID: "2010077744-5kECosJ0",
     API_URL: "https://script.google.com/macros/s/AKfycbzSWSlsKkbMjBixQ-6yZGk9QzPNg4rsaHMBP6epukc4cqiag6RdwwJO_LBtriZLy3akfQ/exec"
 };
 
@@ -11,6 +11,7 @@ const apiService = {
       try {
         console.log(options.body);
         const response = await fetch(url, {
+          mode:"cors",
           method: options.method || "GET",
           headers: {
             Accept: "application/json",
@@ -306,6 +307,9 @@ function resizeImage(file) {
         console.log("Images JSON =", JSON.stringify(images));
         console.log("Image Count =", payload.images.length);
 
+        console.log("===== SEND =====");
+        console.log(payload);
+        console.log(JSON.stringify(payload));
         const result = await apiService.createWorkOrder(payload);
 
         if (!result.success) {
