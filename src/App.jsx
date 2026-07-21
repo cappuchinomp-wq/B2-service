@@ -11,7 +11,6 @@ const apiService = {
       try {
         console.log(options.body);
         const response = await fetch(url, {
-          mode:"cors",
           method: options.method || "GET",
           headers: {
             Accept: "application/json",
@@ -41,7 +40,7 @@ const apiService = {
     return this.request(CONFIG.API_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "text/plain;charset=utf-8"
       },
       body: JSON.stringify(payload)
     });
@@ -237,7 +236,7 @@ function resizeImage(file) {
 
     img.onload = () => {
       const canvas = document.createElement("canvas");
-      const maxWidth = 960;
+      const maxWidth = 800;
       const scale = Math.min(1, maxWidth / img.width);
       canvas.width = img.width * scale;
       canvas.height = img.height * scale;
@@ -247,7 +246,7 @@ function resizeImage(file) {
       resolve({
         name: file.name,
         type: "image/jpeg",
-        data: canvas.toDataURL("image/jpeg", 0.6)
+        data: canvas.toDataURL("image/jpeg", 0.5)
       });
     };
 
