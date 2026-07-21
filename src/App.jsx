@@ -298,15 +298,13 @@ function resizeImage(file) {
           issueType: selectedIssue,
           problem: form.problem,
           priority: form.priority,
-          images: images.length 
-          ? images
-          : []
+          images: images
         };
         console.log("STEP 4");
         console.log("Payload =", payload);
         console.log("Images =", images);
         console.log("Images JSON =", JSON.stringify(images));
-        console.log(payload.images);
+        console.log("Image Count =", payload.images.length);
 
         const result = await apiService.createWorkOrder(payload);
 
