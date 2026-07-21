@@ -339,7 +339,11 @@ function resizeImage(file) {
       setForm(DEFAULT_FORM);
       setSelectedIssue("");
       setImages([]);
-      document.querySelector('input[type="file"]')?.value = "";
+      const fileInput = document.querySelector('input[type="file"]');
+
+      if (fileInput) {
+        fileInput.value = "";
+      }
     }
 
     return (
