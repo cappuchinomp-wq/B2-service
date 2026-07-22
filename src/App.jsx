@@ -11,6 +11,7 @@ const apiService = {
       try {
         console.log(options.body);
         const response = await fetch(url, {
+          redirect:"follow",
           method: options.method || "GET",
           headers: {
             Accept: "application/json",
@@ -23,6 +24,9 @@ const apiService = {
             `HTTP ${response.status}`
           );
         }
+        console.log(response.type);
+        console.log(response.url);
+        console.log(response.status);
         return await response.json();
       } catch (error) {
         console.error("API Error:", error);
