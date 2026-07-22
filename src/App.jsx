@@ -9,9 +9,9 @@ const CONFIG = {
 const apiService = {
     async request(url, options = {}) {
       try {
+        console.log("Fetch URL =", url);
         console.log(options.body);
         const response = await fetch(url, {
-          redirect:"follow",
           method: options.method || "GET",
           headers: {
             Accept: "application/json",
