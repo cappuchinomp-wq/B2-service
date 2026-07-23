@@ -368,7 +368,7 @@ function resizeImage(file) {
       profile={profile} 
       kpi={kpi}/>
 
-      <div className="p-24">
+      <div className="p-4 pb-24">
 
         {currentPage === "HOME" && (
           <HomePage
@@ -417,6 +417,7 @@ setPage={setCurrentPage}
 />
 </div>
     )
+  }
 
   function HeaderSection({ profile, kpi}) {
     return (
@@ -703,20 +704,20 @@ setPage={setCurrentPage}
         );
         }
 
-        function BottomNavigation() {
+        function BottomNavigation({page, setPage}) {
         return (
 
-        <div className='fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg'>
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
         
-      <div className='grid grid-cols-4 py-2'>
+      <div className="grid grid-cols-4 py-2">
       
-      <NavButton icon='🏠' label='หน้าหลัก' active/>
+      <NavButton icon="🏠" label="หน้าหลัก" active={page==="HOME"} onClick={()=>setPage("HOME")}/>
 
-      <NavButton icon='📋' label='งาน'/>
+      <NavButton icon="📋" label="งาน" active={page==="TRACK"} onClick={()=>setPage("TRACK")}/>
 
-      <NavButton icon='🛠️' label='PM'/>
+      <NavButton icon="🛠️" label="PM"/>
 
-      <NavButton icon='👤' label='โปรไฟล์'/>
+      <NavButton icon="👤" label="โปรไฟล์"/>
       </div>
         </div>
         );
@@ -734,7 +735,7 @@ setPage={setCurrentPage}
               <div className="grid grid-cols-2 gap-4">
                 <button
                 onClick={onRepair}
-                className="be-white rounded-3xl p-6 shadow">
+                className="bg-white rounded-3xl p-6 shadow">
                   <div className="text-5xl">
                     🛠
                   </div>
@@ -870,11 +871,12 @@ setPage={setCurrentPage}
         function NavButton({
         icon,
         label,
-        active = false
+        active,
+        onClick
         }) {
         return (
         
-        <button className={`flex flex-col items-center 
+        <button onClick={onclick} className={`flex flex-col items-center 
         ${active ? 'text-green-600' : 'text-gray-400'}`}>
         
         <span className='text-2xl'>
@@ -886,4 +888,5 @@ setPage={setCurrentPage}
         </span>
         </button>
         );
-        }
+      }
+    
