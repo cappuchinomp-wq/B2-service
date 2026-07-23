@@ -136,7 +136,7 @@ export default function B2Service() {
         job => job.status !== "เสร็จสิ้น"
       ).length;
       const urgent = jobs.filter(
-        job => job.priority.includes("Critical")
+        job => (job.priority || "").includes("Critical")
       ).length;
 
       return {
@@ -224,6 +224,17 @@ export default function B2Service() {
         alert('กรุณาระบุปัญหา');
         return false;
       }
+
+      if (!form.priority) {
+        alert("กรุณาเลือกระดับความเร่งด่วน");
+        return false;
+      }
+
+      if (!selectedIssue) {
+        alert("กรุณาเลือกประเภทงาน");
+        return false;
+      }
+
       return true;
     }
 
@@ -240,8 +251,8 @@ function resizeImage(file) {
 
     img.onload = () => {
       const canvas = document.createElement("canvas");
-      const maxWidth = 800;
-      const scale = Math.min(1, maxWidth / img.width);
+      const maxSize = 800;
+      const scale = Math.min(1, maxSize / img.width, maxSize/img.height);
       canvas.width = img.width * scale;
       canvas.height = img.height * scale;
       const ctx = canvas.getContext("2d");
@@ -288,7 +299,6 @@ function resizeImage(file) {
         setLoading(true);
 
         console.log(images.length);
-        console.log(images[0]);
         console.log("STEP 3");
 
         const payload = {
@@ -299,7 +309,7 @@ function resizeImage(file) {
           area: form.area,
           department: form.department,
           phone: form.phone,
-          issueType: selectedIssue,
+          issueType: form.issueType,
           problem: form.problem,
           priority: form.priority,
           images: images
@@ -619,7 +629,7 @@ function resizeImage(file) {
         <div className='space-y-4'>
         {
         jobs.map((job, index) => (
-          <JobCard key={index} job={job}/>
+          <JobCard key={job.wo} job={job}/>
           ))
         }
         </div>
