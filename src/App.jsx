@@ -119,6 +119,8 @@ export default function B2Service() {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [jobs, setJobs] = useState([]);
+    const [currentPage, setCurrentPage] = useState("HOME");
+    const [selectedJob, setSelectedJob] = useState(null);
     const [form, setForm] = useState(DEFAULT_FORM);
     const [selectedIssue, setSelectedIssue] = useState('');
     const [images, setImages] = useState([]);
@@ -360,37 +362,61 @@ function resizeImage(file) {
     }
 
     return (
-      <div className='min-h-screen bg-gray-100'>
+      <div className="min-h-screen bg-gray-100">
       
       <HeaderSection 
       profile={profile} 
       kpi={kpi}/>
 
-      <div className='p-4'>
-      
-      <RepairForm 
-      form={form}
-      loading={loading}
-      selectedIssue={selectedIssue}
-      images={images}
-      onImageChange={handleImageChange}
-      onChange={updateForm}
-      onSelectIssue={selectIssue}
-      onSubmit={submitWorkOrder}/>
+      <div className="p-24">
 
-      </div>
+        {currentPage === "HOME" && (
+          <HomePage
+          profile={profile}
+          jobs={jobs}
+          onRepair={() => setCurrentPage("REPAIR")}
+          onTrack={() => setCurrentPage("TRACK")}
+          />
+        )}
 
-      <div className='p-4 pb-24'>
-      
-      <RecentJobs jobs={jobs} />
+        {currentPage === "REPAIR" && (
+          <div className="p-4">
+            <RepairForm
+            form={form}
+            loading={loading}
+            selectedIssue={selectedIssue}
+            images={images}
+            onImageChange={handleImageChange}
+            onChange={updateForm}
+            onSelectIssue={selectIssue}
+            onSubmit={submitWorkOrder}
+            />
+            </div>
+        )}
 
-      </div>
-
-      <BottomNavigation />
-
-      </div>
-    );
-  }
+{currentPage === "TRACK" && (
+  <TrackPage
+  jobs={jobs}
+  onBack={() => setCurrentPage("HOME")}
+  onSelect={(job) =>{
+    setSelectedJob(job);
+    setCurrentPage("DETAIL");
+  }}
+  />
+)}
+{currentPage==="DETAIL" &&(
+  <JobDetail
+  job={selectedJob}
+  onBack={()=>setCurrentPage("TRACK")}
+  />
+)}
+</div>
+<BottomNavigation
+page={currentPage}
+setPage={setCurrentPage}
+/>
+</div>
+    )
 
   function HeaderSection({ profile, kpi}) {
     return (
@@ -694,6 +720,151 @@ function resizeImage(file) {
       </div>
         </div>
         );
+        }
+
+        function HomePage({
+          profile,
+          jobs,
+          onRepair,
+          onTrack
+        }){
+          const latest = jobs.slice(0,3);
+          return(
+            <div className="p-4">
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                onClick={onRepair}
+                className="be-white rounded-3xl p-6 shadow">
+                  <div className="text-5xl">
+                    🛠
+                  </div>
+                  <div className="mt-3 font-bold">
+                    แจ้งซ่อม
+                  </div>
+                </button>
+                <button
+                onClick={onTrack}
+                className="bg-white rounded-3xl p-6 shadow">
+                  <div className="text-5xl">
+                    📋
+                  </div>
+                  <div className="mt-3 font-bold">
+                    ติดตามงาน
+                  </div>
+                </button>
+                <button
+                className="bg-white rounded-3xl p-6 shadow">
+                  <div className="text-5xl">
+                    🚨
+                  </div>
+                  <div className="mt-3 font-bold">
+                    งานด่วน
+                  </div>
+                </button>
+                <button
+                className="bg-white rounded-3xl p-6 shadow">
+                  <div className="text-5xl">
+                    📞
+                  </div>
+                  <div className="mt-3 font-bold">
+                    โทรช่าง
+                  </div>
+                </button>
+              </div>
+            <div className="mt-6">
+              <h2 className="font-bold text-lg">
+                งานล่าสุด
+              </h2>
+              <div className="space-y-3 mt-3">
+                {
+                  latest.map(job=>(
+                    <JobCard
+                    key={job.wo}
+                    job={job}
+                    />
+                  ))
+                }
+              </div>
+            </div>
+            </div>
+          )
+        }
+        function TrackPage({
+          jobs,
+          onSelect
+        }){
+          return(
+            <div className="p-4">
+              <h2 className="text-xl font-bold mb-4">
+                ติดตามงาน
+              </h2>
+              <div className="space-y-3">
+                {
+                  jobs.map(job=>(
+                    <div
+                    key={job.wo}
+                    onClick={()=>onSelect(job)}
+                    className="bg-white rounded-2xl p-4 shadow cursor-pointer">
+                      <div className="flex justify-between">
+                        <div>
+                          <div className="font-bold">
+                            {job.wo}
+                          </div>
+                          <div>
+                            ห้อง {job.room}
+                          </div>
+                        </div>
+                        <div>
+                          {job.status}
+                        </div>
+                        </div>
+                        <div className="mt-2">
+                          {job.problem}
+                          </div>
+                          </div>
+                  ))
+                }
+              </div>
+            </div>
+          )
+        }
+        function JobDetail({
+          job,
+          onBack
+        }){
+          if(!job){
+            return null;
+          }
+          return(
+            <div className="p-4">
+              <button
+              onClick={onBack}
+              className="mb-4">
+                ← กลับ
+              </button>
+              <div className="bg-white rounded-3xl p-5 shadow">
+                <h2 className="text-xl font-bold">
+                  {job.wo}
+                </h2>
+                <div className="mt-4">
+                  ห้อง
+                  {job.room}
+                </div>
+                <div className="mt-3">
+                  รายละเอียด
+                </div>
+                <p>
+                  {job.problem}
+                </p>
+                <div className="mt-4">
+                  สถานะ
+                  <span className="ml-2 text-green-600">
+                    {job.status}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )
         }
 
         function NavButton({
