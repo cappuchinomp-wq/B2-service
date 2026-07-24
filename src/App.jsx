@@ -403,7 +403,6 @@ function resizeImage(file) {
   jobs={jobs}
   onBack={() => setCurrentPage("HOME")}
   onSelect={(job) =>{
-    setSelectedJob(job);
     setCurrentPage("DETAIL");
   }}
   />
