@@ -730,7 +730,7 @@ setPage={setCurrentPage}
 
       <NavButton icon="📋" label="งาน" active={page==="TRACK"} onClick={()=>setPage("TRACK")}/>
 
-      <NavButton icon="🛠️" label="PM" active={page==="PM"} onClick={(onRepair)=>setPage("PM")}/>
+      <NavButton icon="🛠️" label="PM" active={page==="PM"} onClick={()=>setPage("PM")}/>
 
       <NavButton icon="👤" label="โปรไฟล์" active={page==="PROFILE"} onClick={()=>setPage("PROFILE")}/>
       </div>
@@ -797,6 +797,10 @@ setPage={setCurrentPage}
                     <JobCard
                     key={job.wo}
                     job={job}
+                    onClick={()=>{
+                      setSelectedJob(job);
+                      setCurrentPage("DETAIL");
+                    }}
                     />
                   ))
                 }
