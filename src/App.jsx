@@ -715,9 +715,9 @@ setPage={setCurrentPage}
 
       <NavButton icon="📋" label="งาน" active={page==="TRACK"} onClick={()=>setPage("TRACK")}/>
 
-      <NavButton icon="🛠️" label="PM"/>
+      <NavButton icon="🛠️" label="PM" active={page==="PM"} onClick={(onRepair)=>setPage("PM")}/>
 
-      <NavButton icon="👤" label="โปรไฟล์"/>
+      <NavButton icon="👤" label="โปรไฟล์" active={page==="PROFILE"} onClick={()=>setPage("PROFILE")}/>
       </div>
         </div>
         );
@@ -876,7 +876,7 @@ setPage={setCurrentPage}
         }) {
         return (
         
-        <button onClick={onclick} className={`flex flex-col items-center 
+        <button onClick={onClick} className={`flex flex-col items-center 
         ${active ? 'text-green-600' : 'text-gray-400'}`}>
         
         <span className='text-2xl'>
