@@ -410,14 +410,7 @@ function resizeImage(file) {
   onBack={()=>setCurrentPage("TRACK")}
   />
 )}
-</div>
-<BottomNavigation
-page={currentPage}
-setPage={setCurrentPage}
-/>
-</div>
-    )
-  }
+
 
   {currentPage === "PM" && (
     <div className="p-4">
@@ -433,6 +426,15 @@ setPage={setCurrentPage}
 {currentPage === "PROFILE" && (
   <ProfilePage profile={profile}/>
 )}
+
+</div>
+<BottomNavigation
+page={currentPage}
+setPage={setCurrentPage}
+/>
+</div>
+    )
+  }
 
   function HeaderSection({ profile, kpi}) {
     return (
@@ -711,9 +713,10 @@ setPage={setCurrentPage}
         {job.status}
         </div>
 
-        <button onClick={onClick} className='text-sm bg-green-50 text-green-700 px-3 py-2 rounded-xl'>
+        {onClick && (<button onClick={onClick} className='text-sm bg-green-50 text-green-700 px-3 py-2 rounded-xl'>
         ดูรายละเอียด
         </button>
+        )}
         </div>
         </div>
         );
