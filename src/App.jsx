@@ -377,7 +377,7 @@ function resizeImage(file) {
           onRepair={() => setCurrentPage("REPAIR")}
           onTrack={() => setCurrentPage("TRACK")}
           onSelectJob={(job) => {
-            setselectedJob(job);
+            setSelectedJob(job);
             setCurrentPage("DETAIL");
           }}
           />
@@ -403,6 +403,7 @@ function resizeImage(file) {
   jobs={jobs}
   onBack={() => setCurrentPage("HOME")}
   onSelect={(job) =>{
+    setSelectedJob(job);
     setCurrentPage("DETAIL");
   }}
   />
