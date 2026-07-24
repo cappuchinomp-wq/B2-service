@@ -806,7 +806,7 @@ setPage={setCurrentPage}
                     key={job.wo}
                     job={job}
                     onClick={()=>
-                      onSelectedJob(job)
+                      onSelectJob(job)
                     }
                     />
                   ))
