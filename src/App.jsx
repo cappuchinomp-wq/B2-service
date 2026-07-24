@@ -376,6 +376,10 @@ function resizeImage(file) {
           jobs={jobs}
           onRepair={() => setCurrentPage("REPAIR")}
           onTrack={() => setCurrentPage("TRACK")}
+          onSelect={(job) => {
+            selectedJob(job);
+            setCurrentPage("DETAIL");
+          }}
           />
         )}
 
@@ -745,7 +749,8 @@ setPage={setCurrentPage}
           profile,
           jobs,
           onRepair,
-          onTrack
+          onTrack,
+          onSelect
         }){
           const latest = jobs.slice(0,3);
           return(
@@ -800,10 +805,9 @@ setPage={setCurrentPage}
                     <JobCard
                     key={job.wo}
                     job={job}
-                    onClick={()=>{
-                      setSelectedJob(job);
-                      setCurrentPage("DETAIL");
-                    }}
+                    onClick={()=>
+                      setSelectedJob(job)
+                    }
                     />
                   ))
                 }
