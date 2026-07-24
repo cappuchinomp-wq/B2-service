@@ -419,6 +419,21 @@ setPage={setCurrentPage}
     )
   }
 
+  {currentPage === "PM" && (
+    <div className="p-4">
+      <h2 className="text-xl font-bold">
+        Preventive Maintenance
+      </h2>
+      <p className="text-gray-500 mt-3">
+        Coming Soon
+      </p>
+    </div>
+  )}
+
+{currentPage === "PROFILE" && (
+  <ProfilePage profile={profile}/>
+)}
+
   function HeaderSection({ profile, kpi}) {
     return (
 
@@ -664,7 +679,7 @@ setPage={setCurrentPage}
         );
         }
 
-        function JobCard({job}) {
+        function JobCard({job, onClick}) {
         return (
         <div className='bg-white rounded-3xl p-4 shadow-sm'>
         
@@ -696,7 +711,7 @@ setPage={setCurrentPage}
         {job.status}
         </div>
 
-        <button className='text-sm bg-green-50 text-green-700 px-3 py-2 rounded-xl'>
+        <button onClick={onClick} className='text-sm bg-green-50 text-green-700 px-3 py-2 rounded-xl'>
         ดูรายละเอียด
         </button>
         </div>
@@ -864,6 +879,26 @@ setPage={setCurrentPage}
                   </span>
                 </div>
               </div>
+            </div>
+          )
+        }
+
+        function ProfilePage({
+          profile
+        }){
+          return(
+            <div className="p-4">
+            <div className="bg-white rounded-3xl p-6 shadow">
+            <div className="text-6xl">
+            👤
+            </div>
+            <h2 className="mt-4 font-bold">
+            {profile?.displayName}
+            </h2>
+            <p className="text-sm text-gray-500">
+            {profile?.userId}
+            </p>
+            </div>
             </div>
           )
         }
