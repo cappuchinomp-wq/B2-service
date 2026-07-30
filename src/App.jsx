@@ -1029,6 +1029,7 @@ return (
                 key={index}
                 src={img}
                 alt=""
+                loading="lazy"
                 className="rounded-2xl shadow"
                 />
               ))
