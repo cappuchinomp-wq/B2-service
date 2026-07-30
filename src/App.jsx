@@ -140,10 +140,30 @@ export default function B2Service() {
       const urgent = jobs.filter(
         job => (job.priority || "").includes("Critical")
       ).length;
+      const complete =
+      jobs.filter(j=>j.status==="เสร็จสิ้น").length;
+      const total=jobs.length;
+
+      if (loading) {
+        return (
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin text-5xl">
+                ⚙️
+              </div>
+              <p className="mt-4">
+                กำลังโหลด...
+              </p>
+            </div>
+            </div>
+        );
+      }
 
       return {
         pending,
         urgent,
+        complete,
+        total,
         sla: '98%'
       };
         
@@ -401,7 +421,7 @@ function resizeImage(file) {
 {currentPage === "TRACK" && (
   <TrackPage
   jobs={jobs}
-  onBack={() => setCurrentPage("HOME")}
+  onRefresh={loadWorkOrders}
   onSelect={(job) =>{
     setSelectedJob(job);
     setCurrentPage("DETAIL");
@@ -818,13 +838,32 @@ setPage={setCurrentPage}
         }
         function TrackPage({
           jobs,
-          onSelect
+          onSelect,
+          onRefresh
         }){
           return(
             <div className="p-4">
-              <h2 className="text-xl font-bold mb-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">
                 ติดตามงาน
               </h2>
+              <button
+              onClick={onRefresh}
+              className="bg-green-600 text-white px-4 py-2 rounded-xl">
+                รีเฟรช
+              </button>
+              </div>
+              {
+                jobs.length===0 ? (
+                <div className="bg-white rounded-3xl p-8 text-center">
+                  <div className="text-5xl">
+                    📭
+                  </div>
+                  <div className="mt-3 font-bold">
+                    ยังไม่มีรายการแจ้งซ่อม
+                  </div>
+                  </div>
+               ) : (
               <div className="space-y-3">
                 {
                   jobs.map(job=>(
@@ -841,9 +880,10 @@ setPage={setCurrentPage}
                             ห้อง {job.room}
                           </div>
                         </div>
-                        <div>
-                          {job.status}
+                        <StatusBadge status={job.status}/>
                         </div>
+                       <div className="mt-3">
+                        <PriorityBadge priority={job.priority}/>
                         </div>
                         <div className="mt-2">
                           {job.problem}
@@ -852,9 +892,48 @@ setPage={setCurrentPage}
                   ))
                 }
               </div>
-            </div>
           )
         }
+        </div>
+          );
+        }
+        
+function StatusBadge({ status }) {
+  const color =
+  status === "เสร็จสิ้น"
+  ? "bg-green-100 text-green-700"
+  : status === "กำลังดำเนินการ"
+  ? "bg-yellow-100 text-yellow-700"
+  : "bg-blue-100 text-blue-700";
+
+  return (
+    <span
+    className={`px-3 py-1 rounded-full text-xs font-bold ${color}`}>
+      {status}
+    </span>
+  );
+}   
+
+function PriorityBadge({ priority }) {
+let color = "bg-green-100 text-green-700";
+
+if (priority?.includes("Critical"))
+  color = "bg-red-100 text-red-700";
+
+else if (priority?.includes("High"))
+  color = "bg-orange-100 text-orange-700";
+
+else if (priority?.includes("Medium"))
+  color = "bg-yellow-100 text-yellow-700"
+
+return (
+  <span
+  className={`px-3 py-1 rounded-full text-xs font-bold ${color}`}>
+    {priority}
+  </span>
+);
+}
+
         function JobDetail({
           job,
           onBack
@@ -870,28 +949,97 @@ setPage={setCurrentPage}
                 ← กลับ
               </button>
               <div className="bg-white rounded-3xl p-5 shadow">
+                <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold">
                   {job.wo}
                 </h2>
-                <div className="mt-4">
-                  ห้อง
+                <StatusBadge status={job.status}/>
+                </div>
+                <div className="mt-5 space-y-3">
+                  <div>
+                    <span className="font-semibold">
+                  ห้อง :
+                  </span>
+                  {" "}
                   {job.room}
                 </div>
-                <div className="mt-3">
-                  รายละเอียด
-                </div>
-                <p>
-                  {job.problem}
-                </p>
-                <div className="mt-4">
-                  สถานะ
-                  <span className="ml-2 text-green-600">
-                    {job.status}
-                  </span>
-                </div>
+                <div>
+              <span className="font-semibold">
+                พื้นที่ :
+              </span>
+              {" "}
+              {job.area}
               </div>
-            </div>
+              <div>
+                <span className="font-semibold">
+                  ประเภทงาน :
+                </span>
+                {" "}
+                {job.issueType}
+              </div>
+              <div>
+                <span className="font-semibold">
+                  ความเร่งด่วน :
+                </span>
+                {" "}
+                <PriorityBadge priority={job.priority}/>
+              </div>
+              <div>
+                <span className="font-semibold">
+                  ผู้แจ้ง :
+                </span>
+                {" "}
+                {job.displayName}
+              </div>
+              <div>
+                <span className="font-semibold">
+                  เบอร์ :
+                </span>
+                {" "}
+                {job.phone}
+              </div>
+              <div>
+                <span className="font-semibold">
+                  วันที่แจ้ง :
+                </span>
+                {" "}
+                {job.date}
+              </div>
+                <div>
+                  <span className="font-semibold">
+                  รายละเอียด
+                  </span>
+                  <div className="bg-gray-50 rounded-xl p-3 mt-2">
+                    {job.problem}
+                  </div>
+                  </div>
+                  </div>
+
+             {
+          job.images &&
+          job.images.length > 0 && (
+            <div className="mt-6">
+            <h3 className="font-bold mb-3">
+            รูปภาพ
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+            {
+              job.images.map((img,index)=>(
+                <img
+                key={index}
+                src={img}
+                alt=""
+                className="rounded-2xl shadow"
+                />
+              ))
+            }
+              </div>
+              </div>
           )
+         }
+         </div>
+         </div>
+          );
         }
 
         function ProfilePage({
