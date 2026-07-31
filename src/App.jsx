@@ -887,7 +887,7 @@ setPage={setCurrentPage}
                   jobs.map(job=>(
                     <div
                     key={job.wo}
-                    onClick={()=>onselect(job)}
+                    onClick={()=>onSelect(job)}
                     className="bg-white rounded-2xl p-4 shadow cursor-pointer">
                       <div className="flex justify-between">
                         <div>
