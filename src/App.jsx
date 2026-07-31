@@ -40,6 +40,12 @@ const apiService = {
     );
     },
 
+    getWorkOrderDetail(wo) {
+      return this.request(
+        `${CONFIG.API_URL}?action=getWorkOrderDetail&wo=${encodeURIComponent(wo)}`
+      );
+    },
+
    createWorkOrder(payload) {
     return this.request(CONFIG.API_URL, {
       method: "POST",
@@ -168,6 +174,24 @@ export default function B2Service() {
       };
         
     }, [jobs]);
+
+    async function openJobDetail(job){
+      try{
+        setLoading(true);
+        const result = await apiService.getWorkOrderDetail(job.wo);
+
+        if(!result.success){
+          throw new Error(result.message);
+        }
+        setSelectedJob(result.data);
+        setCurrentPage("DETAIL");
+      }catch(err){
+        console.error(err);
+        alert(err.message);
+      }finally{
+        setLoading(false);
+      }
+    }
 
     async function initializeLIFF() {
 
@@ -396,10 +420,7 @@ function resizeImage(file) {
           jobs={jobs}
           onRepair={() => setCurrentPage("REPAIR")}
           onTrack={() => setCurrentPage("TRACK")}
-          onSelectJob={(job) => {
-            setSelectedJob(job);
-            setCurrentPage("DETAIL");
-          }}
+          onSelectJob={openJobDetail}
           />
         )}
 
@@ -422,10 +443,7 @@ function resizeImage(file) {
   <TrackPage
   jobs={jobs}
   onRefresh={loadWorkOrders}
-  onSelect={(job) =>{
-    setSelectedJob(job);
-    setCurrentPage("DETAIL");
-  }}
+  onSelect={openJobDetail}
   />
 )}
 {currentPage==="DETAIL" &&(
@@ -826,7 +844,7 @@ setPage={setCurrentPage}
                     key={job.wo}
                     job={job}
                     onClick={()=>
-                      onSelectJob(job)
+                      openJobDetail(job)
                     }
                     />
                   ))
@@ -869,7 +887,7 @@ setPage={setCurrentPage}
                   jobs.map(job=>(
                     <div
                     key={job.wo}
-                    onClick={()=>onSelect(job)}
+                    onClick={()=>onselectS(job)}
                     className="bg-white rounded-2xl p-4 shadow cursor-pointer">
                       <div className="flex justify-between">
                         <div>
