@@ -66,8 +66,45 @@ const apiService = {
         ...payload
       })
     });
+   },
+   startWork(payload) {
+    return this.request(CONFIG.API_URL,{
+      method: "POST",
+      headers: {
+        "Content-Type":"text/plain;charset=UTF-8"
+      },
+      body: JSON.stringify({
+        action: "startWork",
+        ...payload
+      })
+    });
+   },
+   finishWork(payload) {
+    return this.request(CONFIG.API_URL,{
+      method: "POST",
+      headers: {
+        "Content-Type":"text/plain;charset=UTF-8"
+      },
+      body: JSON.stringify({
+        action: "finishWork",
+        ...payload
+      })
+    });
+   },
+   submitInspection(payload) {
+    return this.request(CONFIG.API_URL,{
+      method: "POST",
+      headers: {
+        "Content-Type":"text/plain;charset=UTF-8"
+      },
+      body: JSON.stringify({
+        action: "submitInspection",
+        ...payload
+      })
+    });
    }
   };
+
 const QUICK_ISSUES = [
     '💡 ไฟฟ้า',  
     '❄️ แอร์',
@@ -266,6 +303,84 @@ export default function B2Service() {
       }
       
     }
+
+ async function startWork(job) {
+
+    try {
+      setLoading(true);
+      const result =
+      await apiService.startWork({
+        wo: job.wo
+      });
+
+      if (!result.success){
+        throw new Error(result.message);
+      }
+
+      await loadWorkOrders();
+      const detail = await apiService.getWorkOrderDetail(job.wo);
+
+      setSelectedJob(detail.data);
+
+      alert("เริ่มงานแล้ว");
+    }catch(err){
+      alert(err.message);
+    }finally{
+      setLoading(false);
+    }
+    
+  }
+  async function finishWork(job) {
+
+    try {
+      setLoading(true);
+      const result =
+      await apiService.finishWork({
+        wo: job.wo
+      });
+
+      if (!result.success){
+        throw new Error(result.message);
+      }
+
+      await loadWorkOrders();
+      const detail =
+      await apiService.getWorkOrderDetail(job.wo);
+      setSelectedJob(detail.data);
+      alert("ปิดงานแล้ว");
+    }catch(err){
+      alert(err.message);
+    }finally{
+      setLoading(false);
+    }
+    
+  }
+  async function submitInspection(job) {
+
+    try {
+      setLoading(true);
+      const result =
+      await apiService.submitInspection({
+        wo: job.wo
+      });
+
+      if (!result.success){
+        throw new Error(result.message);
+      }
+
+      await loadWorkOrders();
+      const detail =
+      await apiService.getWorkOrderDetail(job.wo);
+
+      setSelectedJob(detail.data);
+      alert("ส่งตรวจรับเรียบร้อย");
+    }catch(err){
+      alert(err.message);
+    }finally{
+      setLoading(false);
+    }
+    
+  }    
 
     function updateForm(field, value) {
       setForm(prev => ({
@@ -1097,47 +1212,47 @@ return (
                 />
               ))
             }
-            <div className="mt-6 space-y-3">
-              {
-                job.status === "กำลังดำเนินการ" && (
-                  <button className="w-full bg-blue-600 text-white rounded-xl py-3"
-                  onClick={()=>onAcceptWork(job)}>
+           <div className="mt-6 space-y-3">
+            {
+              job.status === "รอดำเนินการ" && (
+                <button
+                onClick={()=>onAcceptWork(job)}
+                className="w-full bg-blue-600 text-white rounded-xl py-3">
+                  รับงาน
+                </button>
+              )
+            }
 
-                    ✅ รับงาน
-                  </button>
-                )
-              }
-              {
-                job.status === "รับงานแล้ว" && (
-                  <button
-                  className="w-full bg-orange-600 text-white rounded-xl py-3"
-                  onClick={()=>onStartWork(job)}>
+            {
+              job.status === "รับงานแล้ว" && (
+                <button
+                onClick={()=>onStartWork(job)}
+                className="w-full bg-orange-500 text-white rounded-xl py-3">
+                  เริ่มงาน
+                </button>
+              )
+            }
 
-                    🛠 เริ่มงาน
-                  </button>
-                )
-              }
-              {
-                job.status === "กำลังซ่อม" && (
-                  <button
-                  className="w-full bg-green-600 text-white rounded-xl py-3"
-                  onClick={()=>onFinishWork(job)}>
+            {
+              job.status === "กำลังดำเนินการ" && (
+                <button
+                onClick={()=>onFinishWork(job)}
+                className="w-full bg-green-600 text-white rounded-xl py-3">
+                  ปิดงาน
+                </button>
+              )
+            }
 
-                    ✔ ปิดงาน
-                  </button>
-                )
-              }
-              {
-                job.status === "ซ่อมเสร็จ" && (
-                  <button
-                  className="w-full bg-purple-600 text-white rounded-xl py-3"
-                  onClick={()=>onSubmitInspection(job)}>
-
-                    📋 ส่งตรวจรับ
-                  </button>
-                )
-              }
-              </div>
+            {
+              job.status === "ปิดงานแล้ว" && (
+                <button
+                onClick={()=>onSubmitInspection(job)}
+                className="w-full bg-purple-600 text-white rounded-xl py-3">
+                  ส่งตรวจรับ
+                </button>
+              )
+            }
+            </div>
               </div>
               </div>
           )
