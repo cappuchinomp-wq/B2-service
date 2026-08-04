@@ -1000,7 +1000,7 @@ setPage={setCurrentPage}
                     key={job.wo}
                     job={job}
                     onClick={()=>
-                      openJobDetail(job)
+                      onSelectJob(job)
                     }
                     />
                   ))
@@ -1094,7 +1094,7 @@ let color = "bg-green-100 text-green-700";
 if (priority?.includes("Critical"))
   color = "bg-red-100 text-red-700";
 
-else if (priority?.includes("High"))
+else if (priority?.includes("Hight"))
   color = "bg-orange-100 text-orange-700";
 
 else if (priority?.includes("Medium"))
@@ -1212,6 +1212,7 @@ return (
                 />
               ))
             }
+               </div>
            <div className="mt-6 space-y-3">
             {
               job.status === "รอดำเนินการ" && (
@@ -1253,7 +1254,6 @@ return (
               )
             }
             </div>
-              </div>
               </div>
           )
          }
