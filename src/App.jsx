@@ -54,6 +54,18 @@ const apiService = {
       },
       body: JSON.stringify(payload)
     });
+   },
+   acceptWork(payload) {
+    return this.request(CONFIG.API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=UTF-8"
+      },
+      body: JSON.stringify({
+        action: "acceptWork",
+        ...payload
+      })
+    });
    }
   };
 const QUICK_ISSUES = [
@@ -228,6 +240,31 @@ export default function B2Service() {
         console.error(error);
         setJobs([]);
       }
+    }
+
+    async function acceptWork(job) {
+
+      try {
+        setLoading(true);
+        const result =
+        await apiService.acceptWork({
+          wo: job.wo,
+          staff: profile.displayName
+        });
+        if (!result.success){
+          throw new Error(result.message);
+        }
+        await loadWorkOrders();
+        const detail =
+        await apiService.getWorkOrderDetail(job.wo);
+        setSelectedJob(detail.data);
+        alert("รับงานเรียบร้อย");
+      }catch(err){
+        alert(err.message);
+      }finally{
+        setLoading(false);
+      }
+      
     }
 
     function updateForm(field, value) {
@@ -450,6 +487,10 @@ function resizeImage(file) {
   <JobDetail
   job={selectedJob}
   onBack={()=>setCurrentPage("TRACK")}
+  onAcceptWork={acceptWork}
+  onStartWork={startWork}
+  onFinishWork={finishWork}
+  onSubmitInspection={submitInspection}
   />
 )}
 
@@ -954,7 +995,11 @@ return (
 
         function JobDetail({
           job,
-          onBack
+          onBack,
+          onAcceptWork,
+          onStartWork,
+          onFinishWork,
+          onSubmitInspection
         }){
           if(!job){
             return null;
@@ -1052,6 +1097,47 @@ return (
                 />
               ))
             }
+            <div className="mt-6 space-y-3">
+              {
+                job.status === "กำลังดำเนินการ" && (
+                  <button className="w-full bg-blue-600 text-white rounded-xl py-3"
+                  onClick={()=>onAcceptWork(job)}>
+
+                    ✅ รับงาน
+                  </button>
+                )
+              }
+              {
+                job.status === "รับงานแล้ว" && (
+                  <button
+                  className="w-full bg-orange-600 text-white rounded-xl py-3"
+                  onClick={()=>onStartWork(job)}>
+
+                    🛠 เริ่มงาน
+                  </button>
+                )
+              }
+              {
+                job.status === "กำลังซ่อม" && (
+                  <button
+                  className="w-full bg-green-600 text-white rounded-xl py-3"
+                  onClick={()=>onFinishWork(job)}>
+
+                    ✔ ปิดงาน
+                  </button>
+                )
+              }
+              {
+                job.status === "ซ่อมเสร็จ" && (
+                  <button
+                  className="w-full bg-purple-600 text-white rounded-xl py-3"
+                  onClick={()=>onSubmitInspection(job)}>
+
+                    📋 ส่งตรวจรับ
+                  </button>
+                )
+              }
+              </div>
               </div>
               </div>
           )
