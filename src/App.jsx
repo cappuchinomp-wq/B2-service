@@ -1213,6 +1213,8 @@ return (
               ))
             }
                </div>
+               </div>
+          )}
            <div className="mt-6 space-y-3">
             {
               job.status === "รอดำเนินการ" && (
@@ -1254,9 +1256,6 @@ return (
               )
             }
             </div>
-              </div>
-          )
-         }
          </div>
          </div>
           );
