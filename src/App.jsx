@@ -262,21 +262,13 @@ export default function B2Service() {
           return;
         }
 
-        const liffProfile = await liff.getProfile();
-        const result = await apiService.getUserProfile(
-          liffProfile.userId
-        );
-        if (result.success) {
-          setProfile({
-            ...liffProfile,
-            role: result.data.role
-          });
-        }else{
-          setProfile({
-            ...liffProfile,
-            role: "USER"
-          });
-        }
+        const userProfile = await liff.getProfile();
+        
+        console.log("===== LINE PROFILE =====");
+        console.log(userProfile);
+        console.log("LINE UserId =", userProfile.userId);
+
+        setProfile(userProfile);
         await loadWorkOrders();
       } catch (error) {
         console.error(error);
