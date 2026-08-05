@@ -46,6 +46,12 @@ const apiService = {
       );
     },
 
+    getUserProfile(userId) {
+      return this.request(
+        `${CONFIG.API_URL}?action=getUserProfile&userId=${encodeURIComponent(userId)}`
+      );
+    },
+
    createWorkOrder(payload) {
     return this.request(CONFIG.API_URL, {
       method: "POST",
@@ -179,6 +185,8 @@ export default function B2Service() {
     const [form, setForm] = useState(DEFAULT_FORM);
     const [selectedIssue, setSelectedIssue] = useState('');
     const [images, setImages] = useState([]);
+    const isTech = profile?.role === "TECHNICIAN" ||
+    profile?.role === "ADMIN";
 
     useEffect(() => {
       initializeLIFF();
@@ -254,9 +262,21 @@ export default function B2Service() {
           return;
         }
 
-        const userProfile =
-        await liff.getProfile();
-        setProfile(userProfile);
+        const liffProfile = await liff.getProfile();
+        const result = await apiService.getUserProfile(
+          liffProfile.userId
+        );
+        if (result.success) {
+          setProfile({
+            ...liffProfile,
+            role: result.data.role
+          });
+        }else{
+          setProfile({
+            ...liffProfile,
+            role: "USER"
+          });
+        }
         await loadWorkOrders();
       } catch (error) {
         console.error(error);
@@ -601,6 +621,7 @@ function resizeImage(file) {
 {currentPage==="DETAIL" &&(
   <JobDetail
   job={selectedJob}
+  isTech={isTech}
   onBack={()=>setCurrentPage("TRACK")}
   onAcceptWork={acceptWork}
   onStartWork={startWork}
@@ -629,6 +650,7 @@ function resizeImage(file) {
 <BottomNavigation
 page={currentPage}
 setPage={setCurrentPage}
+isTech={isTech}
 />
 </div>
     )
@@ -920,7 +942,7 @@ setPage={setCurrentPage}
         );
         }
 
-        function BottomNavigation({page, setPage}) {
+        function BottomNavigation({page, setPage, isTech}) {
         return (
 
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
@@ -931,7 +953,11 @@ setPage={setCurrentPage}
 
       <NavButton icon="📋" label="งาน" active={page==="TRACK"} onClick={()=>setPage("TRACK")}/>
 
+        {isTech && (
+
       <NavButton icon="🛠️" label="PM" active={page==="PM"} onClick={()=>setPage("PM")}/>
+
+        )}
 
       <NavButton icon="👤" label="โปรไฟล์" active={page==="PROFILE"} onClick={()=>setPage("PROFILE")}/>
       </div>
@@ -1028,7 +1054,7 @@ setPage={setCurrentPage}
               return true;
 
             if (tab === "PENDING")
-              return pendingStatus.includes(job.status);
+              return pendingStatus.includes((job.status || "").trim());
 
             if (tab === "DONE")
               return (job.status || "").trim() === "เสร็จสิ้น";
@@ -1166,6 +1192,7 @@ return (
 
         function JobDetail({
           job,
+          isTech,
           onBack,
           onAcceptWork,
           onStartWork,
@@ -1271,6 +1298,7 @@ return (
                </div>
                </div>
           )}
+          {isTech && (
            <div className="mt-6 space-y-3">
             {
               job.status === "รอดำเนินการ" && (
@@ -1312,6 +1340,7 @@ return (
               )
             }
             </div>
+          )}
          </div>
          </div>
           );
