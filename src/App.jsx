@@ -1016,12 +1016,19 @@ setPage={setCurrentPage}
           onRefresh
         }){
           const [tab,setTab] = React.useState("ALL");
+          const pendingStatus = [
+            "รอดำเนินการ",
+            "รับงานแล้ว",
+            "กำลังดำเนินการ",
+            "ปิดงานแล้ว",
+            "รอตรวจรับ"
+          ];
           const filteredJobs = jobs.filter(job => {
             if (tab === "ALL")
               return true;
 
             if (tab === "PENDING")
-              return job.status !== "เสร็จสิ้น";
+              return pendingStatus.includes(job.status);
 
             if (tab === "DONE")
               return job.status === "เสร็จสิ้น";
@@ -1118,19 +1125,23 @@ setPage={setCurrentPage}
         }
         
 function StatusBadge({ status }) {
-  const color =
-  status === "เสร็จสิ้น"
-  ? "bg-green-100 text-green-700"
-  : status === "รอดำเนินการ"
-  ? "bg-yellow-100 text-yellow-700"
-  : "bg-blue-100 text-blue-700";
+  const colorMap = {
+    "รอดำเนินการ": "bg-yellow-100 text-yellow-700",
+    "รับงานแล้ว": "bg-indigo-100 text-indigo-700",
+    "กำลังดำเนินการ": "bg-blue-100 text-blue-700",
+    "ปิดงานแล้ว": "bg-purple-100 text-purple-700",
+    "รอตรวจรับ": "bg-orange-100 text-orange-700",
+    "เสร็จสิ้น": "bg-green-100 text-green-700",
+  };
 
   return (
-    <span
-    className={`px-3 py-1 rounded-full text-xs font-bold ${color}`}>
+    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+      colorMap[status] || "bg-gray-100 text-gray-700"
+    }`}>
       {status}
     </span>
   );
+  
 }   
 
 function PriorityBadge({ priority }) {
