@@ -1015,6 +1015,19 @@ setPage={setCurrentPage}
           onSelect,
           onRefresh
         }){
+          const [tab,setTab] = React.useState("All");
+          const filteredJobs = jobs.filter(job => {
+            if (tab === "ALL")
+              return true;
+
+            if (tab === "PENDING")
+              return job.status !== "เสร็จสิ้น";
+
+            if (tab === "DONE")
+              return job.status !== "เสร็จสิ้น";
+
+            return true;
+          });
           return(
             <div className="p-4">
             <div className="flex justify-between items-center mb-4">
@@ -1023,10 +1036,39 @@ setPage={setCurrentPage}
               </h2>
               <button
               onClick={onRefresh}
-              className="bg-green-600 text-white px-4 py-2 rounded-xl">
+              className="bg-green-600">
                 รีเฟรช
               </button>
               </div>
+             <div className="flex bg-gray-100 rounded-xl p-1 mb-5">
+              <button
+              onClick={() => setTab("ALL")}
+              className = {`flex-1 py-2 rounded-lg ${
+                tab === "ALL"
+                ? "bg-white shadow font-blod text-green-600"
+                : ""
+              }`}>
+                ทั้งหมด
+              </button>
+              <button
+              onClick={() => setTab("PENDING")}
+              className = {`flex=1 py-2 rounded-lg ${
+                tab === "PENDING"
+                ? "bg-white shadow font-bold text-green-600"
+                : ""
+              }`}>
+                รอดำเนินการ
+              </button>
+              <button
+              onClick={() => setTab("DONE")}
+              className = {`flex-1 py-2 rounded-lg ${
+                tab === "DONE"
+                ? "bg-white shadow font-bold text-green-600"
+                : ""
+              }`}>
+                เสร็จแล้ว
+              </button>
+             </div>
               {
                 jobs.length===0 ? (
                 <div className="bg-white rounded-3xl p-8 text-center">
@@ -1040,7 +1082,7 @@ setPage={setCurrentPage}
                ) : (
               <div className="space-y-3">
                 {
-                  jobs.map(job=>(
+                  filteredJobs.map(job=>(
                     <div
                     key={job.wo}
                     onClick={()=>onSelect(job)}
@@ -1050,17 +1092,22 @@ setPage={setCurrentPage}
                           <div className="font-bold">
                             {job.wo}
                           </div>
-                          <div>
+                          <div className="text-sm">
                             ห้อง {job.room}
                           </div>
-                        </div>
-                        <StatusBadge status={job.status}/>
-                        </div>
-                       <div className="mt-3">
-                        <PriorityBadge priority={job.priority}/>
-                        </div>
-                        <div className="mt-2">
-                          {job.problem}
+                          <div className="text-sm text-gray-600 mt-1">
+                            {job.problem}
+                          </div>
+                          <div className="text-sm mt-2">
+                            สถานะ :
+                            <span className="ml-1">
+                              <StatusBadge status={job.status}/>
+                            </span>
+                          </div>
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {job.time}
+                          </div>
                           </div>
                           </div>
                   ))
