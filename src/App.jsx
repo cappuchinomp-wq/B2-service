@@ -187,6 +187,7 @@ export default function B2Service() {
     const [images, setImages] = useState([]);
     const isTech = profile?.role === "TECHNICIAN" ||
     profile?.role === "ADMIN";
+    const isAdmin = profile?.role === "ADMIN";
 
     useEffect(() => {
       initializeLIFF();
@@ -298,7 +299,8 @@ export default function B2Service() {
         const result =
         await apiService.acceptWork({
           wo: job.wo,
-          staff: profile.displayName
+          staff: profile.displayName,
+          userId: profile.userId
         });
         if (!result.success){
           throw new Error(result.message);
@@ -322,7 +324,8 @@ export default function B2Service() {
       setLoading(true);
       const result =
       await apiService.startWork({
-        wo: job.wo
+        wo: job.wo,
+        userId: profile.userId
       });
 
       if (!result.success){
@@ -584,6 +587,7 @@ function resizeImage(file) {
           jobs={jobs}
           onRepair={() => setCurrentPage("REPAIR")}
           onTrack={() => setCurrentPage("TRACK")}
+          onMyJob={() => setCurrentPage("MYJOB")}
           onSelectJob={openJobDetail}
           />
         )}
@@ -610,6 +614,13 @@ function resizeImage(file) {
   onSelect={openJobDetail}
   />
 )}
+{currentPage === "MYJOB" && (
+  <MyJobPage
+  jobs={jobs}
+  profile={profile}
+  onselect={openJobDetail}
+  />
+)}
 {currentPage==="DETAIL" &&(
   <JobDetail
   job={selectedJob}
@@ -623,7 +634,7 @@ function resizeImage(file) {
 )}
 
 
-  {currentPage === "PM" && (
+  {isTech && currentPage === "PM" && (
     <div className="p-4">
       <h2 className="text-xl font-bold">
         Preventive Maintenance
@@ -939,17 +950,17 @@ isTech={isTech}
 
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
         
-      <div className="grid grid-cols-4 py-2">
+      <div className={`grid py-2 ${
+        isTech
+        ? "grid-cols-4"
+        : "grid-cols-3"
+      }`}>
       
       <NavButton icon="🏠" label="หน้าหลัก" active={page==="HOME"} onClick={()=>setPage("HOME")}/>
 
       <NavButton icon="📋" label="งาน" active={page==="TRACK"} onClick={()=>setPage("TRACK")}/>
 
-        {isTech && (
-
       <NavButton icon="🛠️" label="PM" active={page==="PM"} onClick={()=>setPage("PM")}/>
-
-        )}
 
       <NavButton icon="👤" label="โปรไฟล์" active={page==="PROFILE"} onClick={()=>setPage("PROFILE")}/>
       </div>
@@ -962,15 +973,53 @@ isTech={isTech}
         profile,
         onSelect
         }){
-        const myJobs = jobs.filter(j => {
-        return j.staff === profile.displayName;
-        });
+        const myJobs = jobs.filter(job => 
+        job.staff === profile.displayName
+        );
+
+        return (
+          <div className="p-4">
+            <h2 className="text-xl font-bold mb-4">
+              งานของฉัน
+            </h2>
+            {
+              myJobs.length === 0?
+              <div className="bg-white rounded-3xl p-6 text-center">
+                ยังไม่มีงานที่รับ
+                </div>
+                :
+                <div className="space-y-3">
+                  {
+                    myJobs.map(job => (
+                      <div
+                      key={job.wo}
+                      onClick={() => onselect(job)}
+                      className="bg-white rounded-2xl p-4 shadow cursor-pointer">
+                        <div className="font-bold">
+                          {job.wo}
+                        </div>
+                        <div className="text-sm mt-2">
+                          {job.problem}
+                        </div>
+
+                        <div className="mt-2">
+                          <StatusBadge status={job.status}/>
+                        </div>
+                        </div>
+                    ))
+                  }
+                  </div>
+            }
+          </div>
+        );
 }
         function HomePage({
           profile,
           jobs,
+          isTech,
           onRepair,
           onTrack,
+          onMyJob,
           onSelectJob
         }){
           const latest = jobs.slice(0,3);
@@ -997,15 +1046,18 @@ isTech={isTech}
                     ติดตามงาน
                   </div>
                 </button>
+                {isTech &&
                 <button
+                onClick={onMyJob}
                 className="bg-white rounded-3xl p-6 shadow">
                   <div className="text-5xl">
-                    🚨
+                    👷
                   </div>
                   <div className="mt-3 font-bold">
-                    งานด่วน
+                  งานของฉัน
                   </div>
                 </button>
+        }
                 <button
                 className="bg-white rounded-3xl p-6 shadow">
                   <div className="text-5xl">
