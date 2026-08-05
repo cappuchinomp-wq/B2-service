@@ -277,7 +277,7 @@ export default function B2Service() {
         console.log(userProfile);
         console.log("LINE UserId =", userProfile.userId);
 
-        setProfile(userProfile);
+        setProfile(profile);
         await loadWorkOrders();
       } catch (error) {
         console.error(error);
