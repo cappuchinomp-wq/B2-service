@@ -264,18 +264,18 @@ export default function B2Service() {
         }
 
         const lineProfile = await liff.getProfile();
-        const result = await apiService.getUserProfile(lineProfile,userId);
+        const result = await apiService.getUserProfile(lineProfile.userId);
         if (!result.success){
           throw new Error("ไม่มีสิทธิ์ใช้งาน")
         }
         const profile = {
           ...lineProfile,
-          role: result.gata.role
+          role: result.data?.role || "USER"
         };
 
         console.log("===== LINE PROFILE =====");
-        console.log(userProfile);
-        console.log("LINE UserId =", userProfile.userId);
+        console.log(lineProfile);
+        console.log("LINE UserId =", lineProfile.userId);
 
         setProfile(profile);
         await loadWorkOrders();
