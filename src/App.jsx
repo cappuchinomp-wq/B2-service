@@ -263,7 +263,15 @@ export default function B2Service() {
           return;
         }
 
-        const userProfile = await liff.getProfile();
+        const lineProfile = await liff.getProfile();
+        const result = await apiService.getUserProfile(lineProfile,userId);
+        if (!result.success){
+          throw new Error("ไม่มีสิทธิ์ใช้งาน")
+        }
+        const profile = {
+          ...lineProfile,
+          role: result.gata.role
+        };
 
         console.log("===== LINE PROFILE =====");
         console.log(userProfile);
@@ -351,7 +359,8 @@ export default function B2Service() {
       setLoading(true);
       const result =
       await apiService.finishWork({
-        wo: job.wo
+        wo: job.wo,
+        userId: profile.userId
       });
 
       if (!result.success){
@@ -376,7 +385,8 @@ export default function B2Service() {
       setLoading(true);
       const result =
       await apiService.submitInspection({
-        wo: job.wo
+        wo: job.wo,
+        userId: profile.userId
       });
 
       if (!result.success){
@@ -585,6 +595,7 @@ function resizeImage(file) {
           <HomePage
           profile={profile}
           jobs={jobs}
+          isTech={isTech}
           onRepair={() => setCurrentPage("REPAIR")}
           onTrack={() => setCurrentPage("TRACK")}
           onMyJob={() => setCurrentPage("MYJOB")}
@@ -618,7 +629,7 @@ function resizeImage(file) {
   <MyJobPage
   jobs={jobs}
   profile={profile}
-  onselect={openJobDetail}
+  onSelect={openJobDetail}
   />
 )}
 {currentPage==="DETAIL" &&(
@@ -653,7 +664,9 @@ function resizeImage(file) {
 <BottomNavigation
 page={currentPage}
 setPage={setCurrentPage}
-isTech={isTech}
+isTech={profile?.role==="TECHNICIAN" ||
+  profile?.role==="ADMIN"
+}
 />
 </div>
     )
@@ -960,7 +973,7 @@ isTech={isTech}
 
       <NavButton icon="📋" label="งาน" active={page==="TRACK"} onClick={()=>setPage("TRACK")}/>
 
-      <NavButton icon="🛠️" label="PM" active={page==="PM"} onClick={()=>setPage("PM")}/>
+      {isTech && (<NavButton icon="🛠️" label="PM" active={page==="PM"} onClick={()=>setPage("PM")}/>)}
 
       <NavButton icon="👤" label="โปรไฟล์" active={page==="PROFILE"} onClick={()=>setPage("PROFILE")}/>
       </div>
@@ -974,7 +987,7 @@ isTech={isTech}
         onSelect
         }){
         const myJobs = jobs.filter(job => 
-        job.staff === profile.displayName
+        (job.staff || "") === profile.displayName
         );
 
         return (
@@ -993,7 +1006,7 @@ isTech={isTech}
                     myJobs.map(job => (
                       <div
                       key={job.wo}
-                      onClick={() => onselect(job)}
+                      onClick={() => onSelect(job)}
                       className="bg-white rounded-2xl p-4 shadow cursor-pointer">
                         <div className="font-bold">
                           {job.wo}
@@ -1046,7 +1059,7 @@ isTech={isTech}
                     ติดตามงาน
                   </div>
                 </button>
-                {isTech &&
+                {isTech && (
                 <button
                 onClick={onMyJob}
                 className="bg-white rounded-3xl p-6 shadow">
@@ -1057,7 +1070,7 @@ isTech={isTech}
                   งานของฉัน
                   </div>
                 </button>
-        }
+        )}
                 <button
                 className="bg-white rounded-3xl p-6 shadow">
                   <div className="text-5xl">
