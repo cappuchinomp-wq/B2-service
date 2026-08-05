@@ -263,7 +263,7 @@ export default function B2Service() {
         }
 
         const userProfile = await liff.getProfile();
-        
+
         console.log("===== LINE PROFILE =====");
         console.log(userProfile);
         console.log("LINE UserId =", userProfile.userId);
@@ -957,6 +957,15 @@ isTech={isTech}
         );
         }
 
+        function MyJobPage({
+        jobs,
+        profile,
+        onSelect
+        }){
+        const myJobs = jobs.filter(j => {
+        return j.staff === profile.displayName;
+        });
+}
         function HomePage({
           profile,
           jobs,
