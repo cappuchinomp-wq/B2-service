@@ -664,9 +664,7 @@ function resizeImage(file) {
 <BottomNavigation
 page={currentPage}
 setPage={setCurrentPage}
-isTech={profile?.role==="TECHNICIAN" ||
-  profile?.role==="ADMIN"
-}
+isTech={profile?.role}
 />
 </div>
     )
@@ -958,27 +956,64 @@ isTech={profile?.role==="TECHNICIAN" ||
         );
         }
 
-        function BottomNavigation({page, setPage, isTech}) {
-        return (
+        function BottomNavigation({page, setPage, role}) {
 
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
+          const isTech = role === "TECHNICAIN";
+          const isAdmin = role === "ADMIN";
         
-      <div className={`grid py-2 ${
-        isTech
-        ? "grid-cols-4"
-        : "grid-cols-3"
-      }`}>
-      
-      <NavButton icon="🏠" label="หน้าหลัก" active={page==="HOME"} onClick={()=>setPage("HOME")}/>
+          const menus = [
+            {
+              page: "HOME",
+              icon: "🏠",
+              label: "หน้าหลัก"
+            },
+            {
+              page: "REPAIR",
+              icon: "➕",
+              label: "แจ้งซ่อม"
+            },
+            {
+              page: "TRACK",
+              icon: "📋",
+              label: (isTech || isAdmin)
+              ? "งานของฉัน"
+              : "งาน"
+            }
+          ];
+          
+          if (isAdmin) {
+            menus.push({
+              page: "PM",
+              icon: "🛠️",
+              label: "PM"
+            });
+          }
 
-      <NavButton icon="📋" label="งาน" active={page==="TRACK"} onClick={()=>setPage("TRACK")}/>
+          menus.push({
+            page: "PROFILE",
+            icon: "👤",
+            label: "โปรไฟล์"
+          });
 
-      {isTech && (<NavButton icon="🛠️" label="PM" active={page==="PM"} onClick={()=>setPage("PM")}/>)}
+          return (
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
 
-      <NavButton icon="👤" label="โปรไฟล์" active={page==="PROFILE"} onClick={()=>setPage("PROFILE")}/>
-      </div>
-        </div>
-        );
+              <div
+              className="grid"
+              style={{
+                gridTemplateColumns: `repeat(${menus.length}, minmax(0,1fr))`
+              }}>
+                {menus.map(menus => (
+                  <NavButton
+                  key={menus.page}
+                  active={page === menus.page}
+                  icon={menus.icon}
+                  label={menus.label}
+                  onClick={() => setPage(menus.page)}/>
+                ))}
+              </div>
+            </div>
+          );
         }
 
         function MyJobPage({
