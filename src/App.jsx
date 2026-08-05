@@ -1031,7 +1031,7 @@ setPage={setCurrentPage}
               return pendingStatus.includes(job.status);
 
             if (tab === "DONE")
-              return job.status === "เสร็จสิ้น";
+              return (job.status || "").trim() === "เสร็จสิ้น";
 
             return true;
           });
