@@ -185,7 +185,7 @@ const DEFAULT_FORM = {
 
 export default function B2Service() {
     const [profile, setProfile] = useState(null);
-    const [authenticated, setauthenticated] = useState(false);
+    const [authenticated, setAuthenticated] = useState(false);
     const [loading, setLoading] = useState(false);
     const [jobs, setJobs] = useState([]);
     const [currentPage, setCurrentPage] = useState("HOME");
@@ -247,7 +247,7 @@ export default function B2Service() {
       if (!cache) return;
       const user = JSON.parse(cache);
       setProfile(user);
-      setauthenticated(true);
+      setAuthenticated(true);
 
       await loadWorkOrders();
       
@@ -673,6 +673,7 @@ function resizeImage(file) {
     </div>
   )}
 
+{console.log(currentPage)}
 {currentPage === "PROFILE" && (
   <ProfilePage 
   profile={profile}
@@ -686,7 +687,7 @@ setPage={setCurrentPage}
 role={profile?.role}
 />
 </div>
-    )
+    );
   }
 
   function HeaderSection({ profile, kpi}) {
@@ -1011,6 +1012,8 @@ role={profile?.role}
             label: "โปรไฟล์"
           });
 
+          console.log("PAGE =", currentPage);
+
           return (
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
 
@@ -1025,7 +1028,9 @@ role={profile?.role}
                   active={page === menus.page}
                   icon={menus.icon}
                   label={menus.label}
-                  onClick={() => setPage(menus.page)}/>
+                  onClick={() => {
+                    console.log(menus.page)
+                    setPage(menus.page)}}/>
                 ))}
               </div>
             </div>
@@ -1561,8 +1566,9 @@ return (
         }) {
         return (
         
-        <button onClick={onClick} className={`flex flex-col items-center 
-        ${active ? 'text-green-600' : 'text-gray-400'}`}>
+        <button onClick={onClick} 
+        className={`flex flex-col items-center justify-center py-3 w-full
+        ${active ? "text-green-600" : "text-gray-400"}`}>
         
         <span className='text-2xl'>
         {icon}
