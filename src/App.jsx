@@ -958,7 +958,7 @@ isTech={profile?.role}
 
         function BottomNavigation({page, setPage, role}) {
 
-          const isTech = role === "TECHNICAIN";
+          const isTech = role === "TECHNICIAN";
           const isAdmin = role === "ADMIN";
         
           const menus = [
@@ -968,12 +968,9 @@ isTech={profile?.role}
               label: "หน้าหลัก"
             },
             {
-              page: "REPAIR",
-              icon: "➕",
-              label: "แจ้งซ่อม"
-            },
-            {
-              page: "TRACK",
+              page: (isTech || isAdmin)
+              ? "NYJOB"
+              : "TRACK",
               icon: "📋",
               label: (isTech || isAdmin)
               ? "งานของฉัน"
@@ -1094,7 +1091,8 @@ isTech={profile?.role}
                     ติดตามงาน
                   </div>
                 </button>
-                {isTech && (
+                const isAdmin = profile?.role === "ADMIN";
+                {(isTech || isAdmin) && (
                 <button
                 onClick={onMyJob}
                 className="bg-white rounded-3xl p-6 shadow">
