@@ -294,7 +294,7 @@ export default function B2Service() {
         await apiService.acceptWork({
           wo: job.wo,
           staff: profile.displayName,
-          userId: profile.username
+          userId: profile.userId
         });
         if (!result.success){
           throw new Error(result.message);
@@ -319,7 +319,7 @@ export default function B2Service() {
       const result =
       await apiService.startWork({
         wo: job.wo,
-        userId: profile.username
+        userId: profile.userId
       });
 
       if (!result.success){
@@ -346,7 +346,7 @@ export default function B2Service() {
       const result =
       await apiService.finishWork({
         wo: job.wo,
-        userId: profile.username
+        userId: profile.userId
       });
 
       if (!result.success){
@@ -574,6 +574,7 @@ function resizeImage(file) {
         onLogin={async (user) => {
           setProfile(user);
           setauthenticated(true);
+          setCurrentPage("HOME");
 
           localStorage.setItem (
             "login",
@@ -687,7 +688,6 @@ role={profile?.role}
 </div>
     )
   }
-  <LoginPage/>
 
   function HeaderSection({ profile, kpi}) {
     return (
@@ -1538,7 +1538,7 @@ return (
             {profile?.displayName}
             </h2>
             <p className="text-sm text-gray-500">
-            {profile?.username}
+            {profile?.userId}
             </p>
             <p className="text-sm text-gray-500 mt-1">
               สิทธิ์: {profile?.role}
