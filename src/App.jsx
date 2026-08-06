@@ -648,6 +648,7 @@ function resizeImage(file) {
   profile={profile}
   onSelect={openJobDetail}
   onAcceptWork={acceptWork}
+  onRefresh={loadWorkOrders}
   />
 )}
 {currentPage==="DETAIL" &&(
@@ -1039,32 +1040,35 @@ role={profile?.role}
         jobs,
         profile,
         onSelect,
-        onAcceptWork
+        onAcceptWork,
+        onRefresh
         }){
           console.log("Profile =", profile);
           console.log("Jobs =", jobs);
 
 const [tab,setTab] = React.useState("NEW");
 
-        const myJobs = jobs.filter(job => 
-        (job.staff || "").trim().toLowerCase() === (profile.displayName || ""
-        ).trim().toLowerCase());
-
-        const newJobs = jobs.filter(job =>
-        (job.status || "").trim() === "รอดำเนินการ"
+        const newJobs = jobs.filter(j =>
+        (j.status || "").trim() === "รอดำเนินการ"
         );
 
-        const workingJobs = myJobs.filter(job =>
+        const workingJobs = jobs.filter(j =>
+        (j.staff || "").trim().toLowerCase() ===
+        (profile.displayName || "").trim().toLowerCase() 
+        &&
         [
         "รับงานแล้ว",
         "กำลังดำเนินการ",
         "ปิดงานแล้ว",
         "รอตรวจรับ"
-        ].includes((job.status || "").trim())
+        ].includes((j.status || "").trim())
         );
 
-        const doneJobs = myJobs.filter(job =>
-        (job.status || "").trim() === "เสร็จสิ้น"
+        const doneJobs = jobs.filter(j =>
+        (j.staff || "").trim().toLowerCase() === 
+        (profile.displayName || "").trim().toLowerCase()
+        &&
+        (j.status || "").trim() === "เสร็จสิ้น"
         );
 
         let filteredJobs = [];
@@ -1083,7 +1087,7 @@ const [tab,setTab] = React.useState("NEW");
                 break;
 
                 default:
-                  filteredJobs = [];
+                  filteredJobs = jobs;
         }
 
         return (
@@ -1091,6 +1095,11 @@ const [tab,setTab] = React.useState("NEW");
             <h2 className="text-2xl font-bold mb-5">
               งานของฉัน
             </h2>
+            <button
+            onClick={onRefresh}
+            className="bg-green-600 text-white px-3 py-2 rounded-full">
+              รีเฟรช
+            </button>
             <div className="flex bg-gray-100 rounded-xl p-1 mb-5">
               <button
               onClick={() => setTab("NEW")}
