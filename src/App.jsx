@@ -969,7 +969,7 @@ isTech={profile?.role}
             },
             {
               page: (isTech || isAdmin)
-              ? "NYJOB"
+              ? "MYJOB"
               : "TRACK",
               icon: "📋",
               label: (isTech || isAdmin)
@@ -1068,6 +1068,7 @@ isTech={profile?.role}
           onSelectJob
         }){
           const latest = jobs.slice(0,3);
+          const isAdmin = profile?.role === "ADMIN";
           return(
             <div className="p-4">
               <div className="grid grid-cols-2 gap-4">
