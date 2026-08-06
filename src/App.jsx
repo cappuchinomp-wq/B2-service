@@ -1045,11 +1045,11 @@ role={profile?.role}
 const [tab,setTab] = React.useState("NEW");
 
         const myJobs = jobs.filter(job => 
-        (job.staff || "") === profile.displayName ||
-        job.status === "รอดำเนินการ"
-        );
+        (job.staff || "").trim().toLowerCase() === (profile.displayName || ""
+        ).trim().toLowerCase());
 
         const filteredJobs = myJobs.filter(job => {
+          const status = (job.status || "").trim();
           switch(tab) {
             case "NEW":
               return job.status === "รอดำเนินการ";
