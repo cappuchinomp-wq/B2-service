@@ -1057,7 +1057,7 @@ const [tab,setTab] = React.useState("NEW");
               case "WORKING":
                 return (
                   (job.staff || "").trim().toLowerCase() ===
-                  {profile.displayName || ""}.trim().toLowerCase()
+                  (profile.displayName || "").trim().toLowerCase()
                 ) &&
                   [
                   "รับงานแล้ว",
@@ -1110,7 +1110,7 @@ const [tab,setTab] = React.useState("NEW");
                     "กำลังดำเนินการ",
                     "ปิดงานแล้ว",
                     "รอตรวจรับ"
-                  ].includes(j.status)
+                  ].includes((j.status || "").trim())
                 ).length})
               </button>
               <button
@@ -1120,6 +1120,7 @@ const [tab,setTab] = React.useState("NEW");
                 ? "bg-white shadow text-green-600 font-bold"
                 : ""
               }`}>
+                เสร็จสิ้น
                 ({
                   jobs.filter(j =>
                   (j.staff || "").trim().toLowerCase() ===
