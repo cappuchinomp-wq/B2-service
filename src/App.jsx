@@ -1048,22 +1048,30 @@ const [tab,setTab] = React.useState("NEW");
         (job.staff || "").trim().toLowerCase() === (profile.displayName || ""
         ).trim().toLowerCase());
 
-        const filteredJobs = myJobs.filter(job => {
+        const filteredJobs = jobs.filter(job => {
           const status = (job.status || "").trim();
           switch(tab) {
             case "NEW":
-              return job.status === "รอดำเนินการ";
+              return status === "รอดำเนินการ";
 
               case "WORKING":
-                return [
+                return (
+                  (job.staff || "").trim().toLowerCase() ===
+                  {profile.displayName || ""}.trim().toLowerCase()
+                ) &&
+                  [
                   "รับงานแล้ว",
                   "กำลังดำเนินการ",
                   "ปิดงานแล้ว",
                   "รอตรวจรับ"
-                ].includes(job.status);
+                ].includes(status);
 
                 case "DONE":
-                  return job.status === "เสร็จสิ้น";
+                  return (
+                    (job.staff || "").trim().toLowerCase() ===
+                    (profile.displayName || "").trim().toLowerCase()
+                  ) &&
+                  status === "เสร็จสิ้น";
 
                   default:
                     return true;
@@ -1084,7 +1092,7 @@ const [tab,setTab] = React.useState("NEW");
                 : ""
               }`}>
                 งานใหม่
-                ({jobs.filter(j => j.status === "รอดำเนินการ").length})
+                ({jobs.filter(j => (j.status || "").trim() === "รอดำเนินการ").length})
               </button>
               <button
               onClick={() => setTab("WORKING")}
@@ -1095,6 +1103,8 @@ const [tab,setTab] = React.useState("NEW");
               }`}>
                 กำลังทำ
                 ({jobs.filter(j =>
+                (j.staff || "").trim().toLowerCase() ===
+                (profile.displayName || "").trim().toLowerCase() &&
                   [
                     "รับงานแล้ว",
                     "กำลังดำเนินการ",
@@ -1110,7 +1120,13 @@ const [tab,setTab] = React.useState("NEW");
                 ? "bg-white shadow text-green-600 font-bold"
                 : ""
               }`}>
-                เสร็จแล้ว
+                ({
+                  jobs.filter(j =>
+                  (j.staff || "").trim().toLowerCase() ===
+                  (profile.displayName || "").trim().toLowerCase() &&
+                  (j.status || "").trim() === "เสร็จสิ้น"
+                  ).length
+                })
               </button>
             </div>
           <div className="space-y-4">
