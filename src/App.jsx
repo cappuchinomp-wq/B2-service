@@ -573,7 +573,7 @@ function resizeImage(file) {
         <LoginPage
         onLogin={async (user) => {
           setProfile(user);
-          setauthenticated(true);
+          setAuthenticated(true);
           setCurrentPage("HOME");
 
           localStorage.setItem (
@@ -593,7 +593,7 @@ function resizeImage(file) {
       localStorage.removeItem("login");
 
       setProfile(null);
-      setauthenticated(false);
+      setAuthenticated(false);
       setJobs([]);
       setSelectedJob(null);
       setCurrentPage("HOME");
@@ -673,7 +673,6 @@ function resizeImage(file) {
     </div>
   )}
 
-{console.log(currentPage)}
 {currentPage === "PROFILE" && (
   <ProfilePage 
   profile={profile}
