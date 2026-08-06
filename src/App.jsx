@@ -1011,8 +1011,6 @@ role={profile?.role}
             label: "โปรไฟล์"
           });
 
-          console.log("PAGE =", currentPage);
-
           return (
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
 
