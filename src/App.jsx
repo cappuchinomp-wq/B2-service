@@ -1050,61 +1050,41 @@ const [tab,setTab] = React.useState("NEW");
         (job.staff || "").trim().toLowerCase() === (profile.displayName || ""
         ).trim().toLowerCase());
 
-        const filteredJobs = myJobs.filter(job => {
-          const status = (job.status || "").trim();
-          switch(tab) {
-            case "NEW":
-              return status === "รอดำเนินการ";
+        const newJobs = jobs.filter(job =>
+        (job.status || "").trim() === "รอดำเนินการ"
+        );
 
-              case "WORKING":
-                return [
-                  "รับงานแล้ว",
-                  "กำลังดำเนินการ",
-                  "ปิดงานแล้ว",
-                  "รอตรวจรับ"
-                ].includes(status);
+        const workingJobs = myJobs.filter(job =>
+        [
+        "รับงานแล้ว",
+        "กำลังดำเนินการ",
+        "ปิดงานแล้ว",
+        "รอตรวจรับ"
+        ].includes((job.status || "").trim())
+        );
 
-                case "DONE":
-                  return status === "เสร็จสิ้น";
+        const doneJobs = myJobs.filter(job =>
+        (job.status || "").trim() === "เสร็จสิ้น"
+        );
 
-                  default:
-                    return true;
+        let filteredJobs = [];
 
-                    const newJobs =
-                    jobs.filter(j =>
-                    (j.status || "").trim() === "รอดำเนินการ"
-                    );
+        switch (tab) {
+          case "NEW":
+            filteredJobs = newJobs;
+            break;
 
-                    const workingJobs =
-                    myJobs.filter(j =>
-                    [
-                      "รับงานแล้ว",
-                      "กำลังดำเนินการ",
-                      "ปิดงานแล้ว",
-                      "รอตรวจรับ"
-                    ].includes((j.status || "").trim())
-                    );
+            case "WORKING":
+              filteredJobs = workingJobs;
+              break;
 
-                    const doneJobs =
-                    myJobs.filter(j =>
-                    (j.status || "").trim() === "เสร็จสิ้น"
-                    );
+              case "DONE":
+                filteredJobs = doneJobs;
+                break;
 
-                    switch(tab) {
-                      case "NEW":
-                        filteredJobs = newJobs;
-                        break;
-
-                        case "WORKING":
-                          filteredJobs = workingJobs;
-                          break;
-
-                          case "DONE":
-                            filteredJobs = doneJobs;
-                            break;
-                    }
-          }
-        });
+                default:
+                  filteredJobs = [];
+        }
 
         return (
           <div className="p-4">
