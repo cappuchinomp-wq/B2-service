@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState} from "react";
-import liff from '@line/liff';
 
 const CONFIG = {
     LIFF_ID: "2010077744-5kECosJ0",
@@ -57,12 +56,6 @@ const apiService = {
     getWorkOrderDetail(wo) {
       return this.request(
         `${CONFIG.API_URL}?action=getWorkOrderDetail&wo=${encodeURIComponent(wo)}`
-      );
-    },
-
-    getUserProfile(userId) {
-      return this.request(
-        `${CONFIG.API_URL}?action=getUserProfile&userId=${encodeURIComponent(userId)}`
       );
     },
 
@@ -1090,10 +1083,13 @@ function LoginPage({onLogin}){
 
       localStorage.setItem (
         "login",
-        JSON.stringify(result.user)
+        JSON.stringify(result.data)
       );
 
-      onLogin (result.user);
+      onLogin (result.data);
+    }catch(err){
+      console.error(err);
+      alert(err.message || "Login ไม่สำเร็จ");
     }finally{
       setLoading(false);
     }
