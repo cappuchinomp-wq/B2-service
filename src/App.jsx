@@ -7,6 +7,20 @@ const CONFIG = {
 };
 
 const apiService = {
+
+  login(username, password) {
+    return this.request(CONFIG.API_URL,{
+      method: "POST",
+      headers: {
+        "Content-Type":"text/plain;charset=UTF-8"
+      },
+      body: JSON.stringify({
+        action: "login",
+        username,
+        password
+      })
+    });
+  },
     async request(url, options = {}) {
       try {
         console.log("Fetch URL =", url);
@@ -178,6 +192,7 @@ const DEFAULT_FORM = {
 
 export default function B2Service() {
     const [profile, setProfile] = useState(null);
+    const [authenticated, setauthenticated] = useState(false);
     const [loading, setLoading] = useState(false);
     const [jobs, setJobs] = useState([]);
     const [currentPage, setCurrentPage] = useState("HOME");
@@ -190,7 +205,7 @@ export default function B2Service() {
     const isAdmin = profile?.role === "ADMIN";
 
     useEffect(() => {
-      initializeLIFF();
+      checkLogin();
     }, []);
 
     useEffect(() => {
@@ -233,6 +248,18 @@ export default function B2Service() {
         
     }, [jobs]);
 
+    async function checkLogin() {
+
+      const cache = localStorage.getItem("login");
+      if (!cache) return;
+      const user = JSON.parse(cache);
+      setProfile(user);
+      setauthenticated(true);
+
+      await loadWorkOrders();
+      
+    }
+
     async function openJobDetail(job){
       try{
         setLoading(true);
@@ -248,40 +275,6 @@ export default function B2Service() {
         alert(err.message);
       }finally{
         setLoading(false);
-      }
-    }
-
-    async function initializeLIFF() {
-
-      try {
-        await liff.init({
-          liffId: CONFIG.LIFF_ID
-        });
-
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return;
-        }
-
-        const lineProfile = await liff.getProfile();
-        const result = await apiService.getUserProfile(lineProfile.userId);
-        if (!result.success){
-          throw new Error("ไม่มีสิทธิ์ใช้งาน")
-        }
-        const profile = {
-          ...lineProfile,
-          role: result.data?.role || "USER"
-        };
-
-        console.log("===== LINE PROFILE =====");
-        console.log(lineProfile);
-        console.log("LINE UserId =", lineProfile.userId);
-
-        setProfile(profile);
-        await loadWorkOrders();
-      } catch (error) {
-        console.error(error);
-        alert('ไม่สามารถเชื่อมต่อ Line ได้');
       }
     }
 
@@ -308,7 +301,7 @@ export default function B2Service() {
         await apiService.acceptWork({
           wo: job.wo,
           staff: profile.displayName,
-          userId: profile.userId
+          userId: profile.username
         });
         if (!result.success){
           throw new Error(result.message);
@@ -333,7 +326,7 @@ export default function B2Service() {
       const result =
       await apiService.startWork({
         wo: job.wo,
-        userId: profile.userId
+        userId: profile.username
       });
 
       if (!result.success){
@@ -360,7 +353,7 @@ export default function B2Service() {
       const result =
       await apiService.finishWork({
         wo: job.wo,
-        userId: profile.userId
+        userId: profile.username
       });
 
       if (!result.success){
@@ -582,6 +575,22 @@ function resizeImage(file) {
       }
     }
 
+    if (!authenticated) {
+      return (
+        <LoginPage
+        onLogin={async (user) => {
+          setProfile(user);
+          setauthenticated(true);
+
+          localStorage.setItem (
+            "login",
+            JSON.stringify(user)
+          );
+          await loadWorkOrders();
+        }}/>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-gray-100">
       
@@ -664,11 +673,12 @@ function resizeImage(file) {
 <BottomNavigation
 page={currentPage}
 setPage={setCurrentPage}
-isTech={profile?.role}
+role={profile?.role}
 />
 </div>
     )
   }
+  <LoginPage/>
 
   function HeaderSection({ profile, kpi}) {
     return (
@@ -1057,6 +1067,63 @@ isTech={profile?.role}
             }
           </div>
         );
+}
+
+function LoginPage({onLogin}){
+  const [username,setUsername] = React.useState("");
+  const [password,setPassword] = React.useState("");
+  const [loading,setLoading] = React.useState(false);
+
+  async function  submit() {
+
+    try {
+      setLoading(true);
+      const result = await apiService.login(
+        username,
+        password
+      );
+
+      if (!result.success) {
+        alert (result.message);
+        return;
+      }
+
+      localStorage.setItem (
+        "login",
+        JSON.stringify(result.user)
+      );
+
+      onLogin (result.user);
+    }finally{
+      setLoading(false);
+    }
+    
+  }
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-3xl shadow w-96">
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          Login
+        </h2>
+        <input
+        className="w-full border rounded-xl p-3 mb-4"
+        placeholder="Username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}/>
+        <input
+        type="password"
+        className="w-full border rounded-xl p-3 mb-5"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}/>
+        <button
+        onClick={submit}
+        className="w-full bg-green-600 text-white rounded-xl py-3">
+          {loading?"กำลังเข้าสู่ระบบ":"Login"}
+        </button>
+      </div>
+    </div>
+  );
 }
         function HomePage({
           profile,
