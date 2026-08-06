@@ -1041,6 +1041,8 @@ role={profile?.role}
         onSelect,
         onAcceptWork
         }){
+          console.log("Profile =", profile);
+          console.log("Jobs =", jobs);
 
 const [tab,setTab] = React.useState("NEW");
 
