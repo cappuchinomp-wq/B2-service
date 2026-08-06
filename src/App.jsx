@@ -1092,7 +1092,6 @@ isTech={profile?.role}
                     ติดตามงาน
                   </div>
                 </button>
-                const isAdmin = profile?.role === "ADMIN";
                 {(isTech || isAdmin) && (
                 <button
                 onClick={onMyJob}
