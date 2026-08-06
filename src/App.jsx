@@ -1050,18 +1050,14 @@ const [tab,setTab] = React.useState("NEW");
         (job.staff || "").trim().toLowerCase() === (profile.displayName || ""
         ).trim().toLowerCase());
 
-        const filteredJobs = jobs.filter(job => {
+        const filteredJobs = myJobs.filter(job => {
           const status = (job.status || "").trim();
           switch(tab) {
             case "NEW":
               return status === "รอดำเนินการ";
 
               case "WORKING":
-                return (
-                  (job.staff || "").trim().toLowerCase() ===
-                  (profile.displayName || "").trim().toLowerCase()
-                ) &&
-                  [
+                return [
                   "รับงานแล้ว",
                   "กำลังดำเนินการ",
                   "ปิดงานแล้ว",
@@ -1069,14 +1065,44 @@ const [tab,setTab] = React.useState("NEW");
                 ].includes(status);
 
                 case "DONE":
-                  return (
-                    (job.staff || "").trim().toLowerCase() ===
-                    (profile.displayName || "").trim().toLowerCase()
-                  ) &&
-                  status === "เสร็จสิ้น";
+                  return status === "เสร็จสิ้น";
 
                   default:
                     return true;
+
+                    const newJobs =
+                    jobs.filter(j =>
+                    (j.status || "").trim() === "รอดำเนินการ"
+                    );
+
+                    const workingJobs =
+                    myJobs.filter(j =>
+                    [
+                      "รับงานแล้ว",
+                      "กำลังดำเนินการ",
+                      "ปิดงานแล้ว",
+                      "รอตรวจรับ"
+                    ].includes((j.status || "").trim())
+                    );
+
+                    const doneJobs =
+                    myJobs.filter(j =>
+                    (j.status || "").trim() === "เสร็จสิ้น"
+                    );
+
+                    switch(tab) {
+                      case "NEW":
+                        filteredJobs = newJobs;
+                        break;
+
+                        case "WORKING":
+                          filteredJobs = workingJobs;
+                          break;
+
+                          case "DONE":
+                            filteredJobs = doneJobs;
+                            break;
+                    }
           }
         });
 
@@ -1243,7 +1269,10 @@ function LoginPage({onLogin}){
           onMyJob,
           onSelectJob
         }){
-          const latest = jobs.slice(0,3);
+          const latest = React.useMemo(
+            () => jobs.slice(0,3),
+            [jobs]
+          );
           const isAdmin = profile?.role === "ADMIN";
           return(
             <div className="p-4">
