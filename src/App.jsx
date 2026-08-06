@@ -647,6 +647,7 @@ function resizeImage(file) {
   jobs={jobs}
   profile={profile}
   onSelect={openJobDetail}
+  onAcceptWork={acceptWork}
   />
 )}
 {currentPage==="DETAIL" &&(
@@ -1037,45 +1038,120 @@ role={profile?.role}
         function MyJobPage({
         jobs,
         profile,
-        onSelect
+        onSelect,
+        onAcceptWork
         }){
+
+const [tab,setTab] = React.useState("NEW");
+
         const myJobs = jobs.filter(job => 
-        (job.staff || "") === profile.displayName
+        (job.staff || "") === profile.displayName ||
+        job.status === "รอดำเนินการ"
         );
+
+        const filteredJobs = myJobs.filter(job => {
+          switch(tab) {
+            case "NEW":
+              return job.status === "รอดำเนินการ";
+
+              case "WORKING":
+                return [
+                  "รับงานแล้ว",
+                  "กำลังดำเนินการ",
+                  "ปิดงานแล้ว",
+                  "รอตรวจรับ"
+                ].includes(job.status);
+
+                case "DONE":
+                  return job.status === "เสร็จสิ้น";
+
+                  default:
+                    return true;
+          }
+        });
 
         return (
           <div className="p-4">
-            <h2 className="text-xl font-bold mb-4">
+            <h2 className="text-2xl font-bold mb-5">
               งานของฉัน
             </h2>
-            {
-              myJobs.length === 0?
-              <div className="bg-white rounded-3xl p-6 text-center">
-                ยังไม่มีงานที่รับ
-                </div>
-                :
-                <div className="space-y-3">
-                  {
-                    myJobs.map(job => (
-                      <div
-                      key={job.wo}
-                      onClick={() => onSelect(job)}
-                      className="bg-white rounded-2xl p-4 shadow cursor-pointer">
-                        <div className="font-bold">
-                          {job.wo}
-                        </div>
-                        <div className="text-sm mt-2">
-                          {job.problem}
-                        </div>
-
-                        <div className="mt-2">
-                          <StatusBadge status={job.status}/>
-                        </div>
-                        </div>
-                    ))
-                  }
+            <div className="flex bg-gray-100 rounded-xl p-1 mb-5">
+              <button
+              onClick={() => setTab("NEW")}
+              className={`flex-1 py-2 rounded-lg ${
+                tab === "NEW"
+                ? "bg-white shadow text-green-600 font-bold"
+                : ""
+              }`}>
+                งานใหม่
+                ({jobs.filter(j => j.status === "รอดำเนินการ").length})
+              </button>
+              <button
+              onClick={() => setTab("WORKING")}
+              className={`flex-1 py-2 rounded-lg ${
+                tab === "WORKING"
+                ? "bg-white shadow text-green-600 font-bold"
+                : ""
+              }`}>
+                กำลังทำ
+                ({jobs.filter(j =>
+                  [
+                    "รับงานแล้ว",
+                    "กำลังดำเนินการ",
+                    "ปิดงานแล้ว",
+                    "รอตรวจรับ"
+                  ].includes(j.status)
+                ).length})
+              </button>
+              <button
+              onClick={() => setTab("DONE")}
+              className={`flex-1 py-2 rounded-lg ${
+                tab === "DONE"
+                ? "bg-white shadow text-green-600 font-bold"
+                : ""
+              }`}>
+                เสร็จแล้ว
+              </button>
+            </div>
+          <div className="space-y-4">
+            {filteredJobs.map (job => (
+              <div
+              key={job.wo}
+              className="bg-white rounded-2xl shadow p-4">
+                <div className="flex justify-between">
+                  <div>
+                    <div className="font-bold text-lg">
+                      {job.wo}
+                    </div>
+                    <div className="text-gray-500">
+                      ห้อง {job.room}
+                    </div>
+                    <div className="mt-2">
+                      {job.problem}
+                    </div>
+                    <div className="mt-2">
+                      <PriorityBadge priority={job.priority}/>
+                    </div>
                   </div>
-            }
+                  <div className="flex flex-col gap-2">
+                    {job.status === "รอดำเนินการ" ? (
+                      <button
+                      onClick={() => onAcceptWork(job)}
+                      className="bg-green-600 text-white rounded-xl px-4 py-2">
+                        รับงาน
+                      </button>
+                    ) : (
+                      <button
+                      onClick={() => onselect(job)}
+                      className="bg-blue-600 text-white rounded-xl px-4 py-2">
+                        รายละเอียด
+                      </button>
+                    )}
+                  </div>
+                </div>
+                </div>
+            ))}
+          </div>
           </div>
         );
 }
