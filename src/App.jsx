@@ -584,6 +584,20 @@ function resizeImage(file) {
       );
     }
 
+    function logout() {
+      if (!window.confirm("ต้องการออกจากระบบใช่หรือไม่?")) {
+        return;
+      }
+
+      localStorage.removeItem("login");
+
+      setProfile(null);
+      setauthenticated(false);
+      setJobs([]);
+      setSelectedJob(null);
+      setCurrentPage("HOME");
+    }
+
     return (
       <div className="min-h-screen bg-gray-100">
       
@@ -659,7 +673,9 @@ function resizeImage(file) {
   )}
 
 {currentPage === "PROFILE" && (
-  <ProfilePage profile={profile}/>
+  <ProfilePage 
+  profile={profile}
+  onLogout={logout}/>
 )}
 
 </div>
@@ -1509,7 +1525,8 @@ return (
         }
 
         function ProfilePage({
-          profile
+          profile,
+          onLogout
         }){
           return(
             <div className="p-4">
@@ -1521,8 +1538,16 @@ return (
             {profile?.displayName}
             </h2>
             <p className="text-sm text-gray-500">
-            {profile?.userId}
+            {profile?.username}
             </p>
+            <p className="text-sm text-gray-500 mt-1">
+              สิทธิ์: {profile?.role}
+            </p>
+            <button
+            onClick={onLogout}
+            className="w-full mt-6 bg-red-600 text-white rounded-xl py-3 font-bold hover:bg-red-700">
+              🚪 Logout
+            </button>
             </div>
             </div>
           )
