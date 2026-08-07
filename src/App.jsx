@@ -1509,10 +1509,10 @@ return (
                 </div>
                 <PriorityBadge priority={job.priority}/>
                 </div>
-                <div className="px-5 pt-3">
+                <div className="flex justify-center py-4">
                 <StatusBadge status={job.status}/>
                 </div>
-               <div className="grid grid-cols-2 gap-y-3 px-5">
+               <div className="grid grid-cols-2 gap-y-3 px-5 text-sm">
               <div className="text-gray-500">
                 ห้อง
               </div>
@@ -1555,9 +1555,11 @@ return (
               รูปภาพจากผู้แจ้ง
             </div>
             {
-              job.images.length > 0 &&
+              job.images?.length > 0 && (
               <img
               src = {job.images[0]}
+              alt="ภาพแจ้งซ่อม"
+              loading="lazy"
               className="
               w-full
               h-56
@@ -1565,44 +1567,45 @@ return (
               rounded-2xl
               border"
               />
-            }
+            )}
             </div>
           {isTech && (
-           <div className="mt-6 space-y-3">
+           <div className="px-5 pb-5">
             {
               job.status === "รอดำเนินการ" && (
                 <button
                 onClick={()=>onAcceptWork(job)}
-                className="w-full bg-blue-600 text-white rounded-xl py-3">
+                className="w-full bg-blue-600 text-white rounded-xl py-3 font-semibold">
                   รับงาน
                 </button>
               )
             }
-<div className="grid grid-cols-2 gap-3 mt-6">
             {
-              job.status === "รับงานแล้ว" && 
+              job.status === "รับงานแล้ว" && (
                 <button
                 onClick={()=>onStartWork(job)}
-                className="bg-green-600 rounded-xl py-3 text-white">
+                className="w-full bg-green-600 text-white rounded-xl py-3 font-semibold">
                   เริ่มงาน
-                </button>             
+                </button>  
+              )           
             }
 
             {
-              job.status === "กำลังดำเนินการ" && 
+              job.status === "กำลังดำเนินการ" && (
                 <button
                 onClick={()=>onFinishWork(job)}
-                className="border border-green-600 rounded-xl py-3 text-green-600">
+                className="w-full border-2 border-green-600 rounded-xl py-3 text-green-600
+                font-semibold">
                   ปิดงาน
                 </button>
+              )
             }
-            </div>
-
+      
             {
               job.status === "ปิดงานแล้ว" && (
                 <button
                 onClick={()=>onSubmitInspection(job)}
-                className="w-full bg-purple-600 text-white rounded-xl py-3">
+                className="w-full bg-purple-600 text-white rounded-xl py-3 font-semibold">
                   ส่งตรวจรับ
                 </button>
               )
