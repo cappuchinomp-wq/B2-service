@@ -192,6 +192,12 @@ export default function B2Service() {
     const [selectedJob, setSelectedJob] = useState(null);
     const [form, setForm] = useState(DEFAULT_FORM);
     const [selectedIssue, setSelectedIssue] = useState('');
+    const [finishJob, setFinishJob] = React.useState(null);
+    const [finishImages, setFinishImages] = useState([]);
+    const [finishForm, setFinishForm] = useState({
+      workDone: "",
+      note: ""
+    });
     const [images, setImages] = useState([]);
     const isTech = profile?.role === "TECHNICIAN" ||
     profile?.role === "ADMIN";
@@ -339,32 +345,100 @@ export default function B2Service() {
     }
     
   }
-  async function finishWork(job) {
+   async function finishWork(job) {
 
-    try {
-      setLoading(true);
-      const result =
-      await apiService.finishWork({
-        wo: job.wo,
-        userId: profile.userId
-      });
+   if (!job) return;
 
-      if (!result.success){
-        throw new Error(result.message);
-      }
+   setFinishJob(job);
+   setFinishForm({
+    workDone: "",
+    note: ""
+   });
 
-      await loadWorkOrders();
-      const detail =
-      await apiService.getWorkOrderDetail(job.wo);
-      setSelectedJob(detail.data);
-      alert("ปิดงานแล้ว");
-    }catch(err){
-      alert(err.message);
-    }finally{
-      setLoading(false);
-    }
-    
+   setFinishImages([]);
+   setCurrentPage("FINISH_WORK");
+
   }
+
+  function updateFinishForm(field, value) {
+    setFinishForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  }
+
+  async function handleFinishImageChange(event) {
+    const files = Array.form(event.target.file || []);
+    if (!files.length) {
+      setFinishImages([]);
+      return;
+    }
+    try {
+      const imageList = await Promise.all (
+        files.map(file => resizeImage(file))
+      );
+      setFinishImages(imageList.filter(Boolean));
+    }catch (error) {
+      console.error("Finish image error:", error);
+      alert("ไม่สามารถเตรียมรูปภาพได้");
+    }
+  }
+
+async function submitFinishWork() {
+  if (!finishJob) {
+    alert("ไม่พบข้อมูลงาน");
+    return;
+  }
+  if (!finishForm.workDone.trim()) {
+    alert("กรุณาระบุงานที่ดำเนินการ");
+    return;
+  }
+  if (finishImages.length === 0) {
+    alert("กรุณาแนบรูปภาพหลังซ่อมอย่างน้อย 1 รูป");
+    return;
+  }
+  try {
+    setLoading(true);
+    const result = await apiService.finishWork({
+      wo: finishJob.wo,
+      userId: profile?.userId || "",
+      staff: profile?.displayName || "",
+      workDone: finishForm.workDone,
+      note: finishForm.note,
+      images: finishImages
+    });
+    if (!result.success) {
+      throw new Error (
+        result.message || "ไม่สามารถปิดงานได้"
+      );
+    }
+    await loadWorkOrders();
+    const detail = 
+    await apiService.getWorkOrderDetail(finishJob.wo);
+
+    if (detail.success) {
+      setSelectedJob(detail.data);
+    }
+    setFinishJob(null);
+    setFinishImages([]);
+    setFinishForm({
+      workDone: "",
+      note: ""
+    });
+
+    setCurrentPage("DETAIL");
+    alert("ปิดงานเรียบร้อย");
+  } catch (err) {
+    console.error("submitFinishWork error:", err);
+    alert(
+      err.message || "ไม่สามารถปิดงานได้"
+    );
+  } finally {
+    setLoading(false);
+  }
+  
+}
+
   async function submitInspection(job) {
 
     try {
@@ -662,8 +736,20 @@ function resizeImage(file) {
   onSubmitInspection={submitInspection}
   />
 )}
-
-
+{currentPage === "FINISH_WORK" && (
+  <FinishWorkPage
+  job={finishJob}
+  loading={loading}
+  workDone={finishForm.workDone}
+  note={finishForm.note}
+  images={finishImages}
+  onBack={() => {
+    setCurrentPage("DETAIL");
+  }}
+  onChange={updateFinishForm}
+  onImageChange={handleFinishImageChange}
+  onSubmit={submitFinishWork}/>
+)}
   {isTech && currentPage === "PM" && (
     <div className="p-4">
       <h2 className="text-xl font-bold">
@@ -908,6 +994,133 @@ role={profile?.role}
       </button>
       </div>
         );
+        }
+
+        function FinishWorkPage({
+          job,
+          loading,
+          workDone,
+          note,
+          images,
+          onBack,
+          onChange,
+          onImageChange,
+          onSubmit
+        }) {
+          if (!job) {
+            return null;
+          }
+          return (
+            <div className="p-4 pb-24">
+              <div className="flex items-center mb-5">
+                <button
+                type="button"
+                onClick={onBack}
+                className="text-2xl mr-3">
+                  ←
+                </button>
+                <h2 className="text-xl font-bold">
+                  ปิดงาน
+                </h2>
+              </div>
+              <div className="bg-white rounded-3xl p-5 shadow-sm mb-4">
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  งานดำเนินการ
+                </label>
+            <textarea
+            rows={5}
+            value={workDone}
+            onChange={(e) =>
+              onchange("workDone", e.target.value)
+            }
+            placeholder="กรอกรายละเอียดงานที่ดำเนินการ"
+            className="
+            w-full
+            border
+            rounded-2xl
+            p-4
+            resize-none
+            focus:outline-none
+            focus:ring-2
+            focus:ring-green-500"/>
+              </div>
+              <div className="bg-white rounded-3xl p-5 shadow-sm mb-4">
+                <label className="block text-sm font-bold text-gray-700 mb-3">
+                  รูปภาพหลังซ่อม
+                </label>
+                <input
+                type="file"
+                multiple
+                accept="image/*"
+                onchange={onImageChange}
+                className="
+                w-full
+                border
+                rounded-2xl
+                p-3"/>
+                {images.length > 0 && (
+                  <div className="grid grid-cols-3 gap-3 mt-4">
+                    {images.map((image, index) => (
+                      <div
+                      key={index}
+                      className="relative">
+                        <img
+                        src={image.data}
+                        alt={`หลังซ่อม ${index + 1}`}
+                        className="
+                        w-full
+                        h-28
+                        object-cover
+                        rounded-xl
+                        border"/>
+                        </div>
+                    ))}
+                    </div>
+                )}
+              </div>
+              <div className="bg-white rounded-3xl p-5 shadow-sm mb-5">
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  หมายเหตุเพิ่มเติม
+                </label>
+                <textarea
+                rows={4}
+                value={note}
+                onchange={(e) =>
+                  onchange("note", e.target.value)
+                }
+                placeholder="ระบุหมายเหตุเพิ่มเติม"
+                className="
+                w-full
+                border
+                rounded-2xl
+                p-4
+                resize-none
+                focus:outline-none
+                focus:ring-2
+                focus:ring-green-500"/>
+              </div>
+              <button
+              type="button"
+              onClick={onsubmit}
+              disabled={loading}
+              className="
+              w-full
+              bg-green-600
+              hover:bg-green-700
+              disabled:bg-gray-400
+              text-white
+              rounded-2xl
+              py-4
+              text-lg
+              font-bold
+              shadow-md">
+                {loading
+                ? "กำลังบันทึก..."
+              : "ส่งตรวจรับ"
+              }
+              </button>
+            </div>
+          );
         }
 
         function RecentJobs({jobs}) {
@@ -1603,7 +1816,9 @@ return (
             {
               job.status === "กำลังดำเนินการ" && (
                 <button
-                onClick={()=>onFinishWork(job)}
+                onClick={()=>{setSelectedJob(job);
+                  setPage("FINISH_WORK");
+                }}
                 className="w-full border-2 border-green-600 rounded-xl py-3 text-green-600
                 font-semibold">
                   ปิดงาน
