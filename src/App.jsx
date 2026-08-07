@@ -1554,19 +1554,29 @@ return (
             <div className="font-bold mb-3">
               รูปภาพจากผู้แจ้ง
             </div>
-            {
-              job.images?.length > 0 && (
+            
+              {job.images?.length > 0 ? (
+                <div className="grid grid-cols-2 gap-3">
+                  {job.images.map((img,index) =>( 
               <img
-              src = {job.images[0]}
-              alt="ภาพแจ้งซ่อม"
+              kry = {index}
+              src = {img}
+              alt = {"image-"+index}
               loading="lazy"
               className="
               w-full
-              h-56
+              h-36
               object-cover
-              rounded-2xl
-              border"
+              rounded-xl
+              border
+              cursor-pointer"
               />
+            ))}
+            </div>
+            ) : (
+              <div className="text-gray-400 text-sm">
+                ไม่มีรูปภาพ
+              </div>
             )}
             </div>
           {isTech && (
@@ -1582,22 +1592,19 @@ return (
             }
             {
               job.status === "รับงานแล้ว" && (
+                <div className="grid grid-cols-2 gap-3">
                 <button
                 onClick={()=>onStartWork(job)}
                 className="w-full bg-green-600 text-white rounded-xl py-3 font-semibold">
                   เริ่มงาน
                 </button>  
-              )           
-            }
-
-            {
-              job.status === "กำลังดำเนินการ" && (
                 <button
                 onClick={()=>onFinishWork(job)}
                 className="w-full border-2 border-green-600 rounded-xl py-3 text-green-600
                 font-semibold">
                   ปิดงาน
                 </button>
+                </div>
               )
             }
       
