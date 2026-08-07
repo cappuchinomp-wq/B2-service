@@ -1509,6 +1509,7 @@ return (
                 </div>
                 <PriorityBadge priority={job.priority}/>
                 </div>
+                <div className="px-5 pt-3">
                 <StatusBadge status={job.status}/>
                 </div>
                <div className="grid grid-cols-2 gap-y-3 px-5">
@@ -1608,6 +1609,7 @@ return (
             }
             </div>
           )}
+         </div>
          </div>
           );
         }
