@@ -1502,95 +1502,70 @@ return (
               className="mb-4">
                 ← กลับ
               </button>
-              <div className="bg-white rounded-3xl p-5 shadow">
-                <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold">
+              <div className="bg-white rounded-3xl p-5 shadow overflow-hidden">
+                <div className="flex justify-between items-center border-b px-5 py-4">
+                <div className="text-xl font-bold">
                   {job.wo}
-                </h2>
+                </div>
+                <PriorityBadge priority={job.priority}/>
+                </div>
                 <StatusBadge status={job.status}/>
                 </div>
-                <div className="mt-5 space-y-3">
-                  <div>
-                    <span className="font-semibold">
-                  ห้อง :
-                  </span>
-                  {" "}
-                  {job.room}
-                </div>
-                <div>
-              <span className="font-semibold">
-                พื้นที่ :
-              </span>
-              {" "}
-              {job.area}
+               <div className="grid grid-cols-2 gap-y-3 px-5">
+              <div className="text-gray-500">
+                ห้อง
               </div>
-              <div>
-                <span className="font-semibold">
-                  ประเภทงาน :
-                </span>
-                {" "}
+              <div className="font-medium text-right">
+                {job.room}
+              </div>
+              <div className="text-gray-500">
+                ประเภท
+              </div>
+              <div className="font-medium text-right">
                 {job.issueType}
               </div>
-              <div>
-                <span className="font-semibold">
-                  ความเร่งด่วน :
-                </span>
-                {" "}
-                <PriorityBadge priority={job.priority}/>
+              <div className="text-gray-500">
+                อาการ
               </div>
-              <div>
-                <span className="font-semibold">
-                  ผู้แจ้ง :
-                </span>
-                {" "}
-                {job.displayName}
+              <div className="font-medium text-right">
+                {job.problem}
               </div>
-              <div>
-                <span className="font-semibold">
-                  เบอร์ :
-                </span>
-                {" "}
-                {job.phone}
-              </div>
-              <div>
-                <span className="font-semibold">
-                  วันที่แจ้ง :
-                </span>
-                {" "}
-                {job.date}
-              </div>
-                <div>
-                  <span className="font-semibold">
-                  รายละเอียด
-                  </span>
-                  <div className="bg-gray-50 rounded-xl p-3 mt-2">
-                    {job.problem}
-                  </div>
-                  </div>
-                  </div>
-
-             {
-          job.images &&
-          job.images.length > 0 && (
-            <div className="mt-6">
-            <h3 className="font-bold mb-3">
-            รูปภาพ
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
+              <div className="text-gray-500">
+                แจ้งโดย
+                </div>
+                <div className="font-medium text-right">
+                  {job.displayName}
+                </div>
+                <div className="text-gray-500">
+                เบอร์
+                </div>
+                <div className="font-medium text-right">
+                  {job.phone}
+                </div>
+                <div className="text-gray-500">
+                  เวลาที่แจ้ง
+                </div>
+                <div className="font-medium text-right">
+                  {job.date} {job.time}
+                </div>
+                </div>
+           <div className="px-5 pb-5">
+            <div className="font-bold mb-3">
+              รูปภาพจากผู้แจ้ง
+            </div>
             {
-              job.images.map((img,index)=>(
-                <img
-                key={index}
-                src={img}
-                alt=""
-                loading="lazy"
-                className="rounded-2xl shadow"
-                />
-              ))
+              job.images.length > 0 &&
+              <img
+              src = {job.images[0]}
+              className="
+              w-full
+              h-56
+              object-cover
+              rounded-2xl
+              border"
+              />
             }
-               </div>
-               </div>
-          )}
+            </div>
           {isTech && (
            <div className="mt-6 space-y-3">
             {
@@ -1602,26 +1577,25 @@ return (
                 </button>
               )
             }
-
+<div className="grid grid-cols-2 gap-3 mt-6">
             {
-              job.status === "รับงานแล้ว" && (
+              job.status === "รับงานแล้ว" && 
                 <button
                 onClick={()=>onStartWork(job)}
-                className="w-full bg-orange-500 text-white rounded-xl py-3">
+                className="bg-green-600 rounded-xl py-3 text-white">
                   เริ่มงาน
-                </button>
-              )
+                </button>             
             }
 
             {
-              job.status === "กำลังดำเนินการ" && (
+              job.status === "กำลังดำเนินการ" && 
                 <button
                 onClick={()=>onFinishWork(job)}
-                className="w-full bg-green-600 text-white rounded-xl py-3">
+                className="border border-green-600 rounded-xl py-3 text-green-600">
                   ปิดงาน
                 </button>
-              )
             }
+            </div>
 
             {
               job.status === "ปิดงานแล้ว" && (
