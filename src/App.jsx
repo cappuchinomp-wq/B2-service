@@ -1592,19 +1592,22 @@ return (
             }
             {
               job.status === "รับงานแล้ว" && (
-                <div className="grid grid-cols-2 gap-3">
                 <button
                 onClick={()=>onStartWork(job)}
                 className="w-full bg-green-600 text-white rounded-xl py-3 font-semibold">
                   เริ่มงาน
                 </button>  
+              )           
+            }
+
+            {
+              job.status === "กำลังดำเนินการ" && (
                 <button
                 onClick={()=>onFinishWork(job)}
                 className="w-full border-2 border-green-600 rounded-xl py-3 text-green-600
                 font-semibold">
                   ปิดงาน
                 </button>
-                </div>
               )
             }
       
