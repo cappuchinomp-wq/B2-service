@@ -345,6 +345,13 @@ export default function B2Service() {
     }
     
   }
+
+    function openFinishWorkPage(job) {
+    console.log("OPEN FINISH WORK =", job);
+    setFinishJob(job);
+    setCurrentPage("FINISH_WORK");
+  }
+
    async function finishWork(job) {
 
    if (!job) return;
@@ -732,7 +739,7 @@ function resizeImage(file) {
   onBack={()=>setCurrentPage("TRACK")}
   onAcceptWork={acceptWork}
   onStartWork={startWork}
-  onFinishWork={finishWork}
+  onFinishWork={openFinishWorkPage}
   onSubmitInspection={submitInspection}
   />
 )}
@@ -740,14 +747,9 @@ function resizeImage(file) {
   <FinishWorkPage
   job={finishJob}
   loading={loading}
-  workDone={finishForm.workDone}
-  note={finishForm.note}
-  images={finishImages}
   onBack={() => {
     setCurrentPage("DETAIL");
   }}
-  onChange={updateFinishForm}
-  onImageChange={handleFinishImageChange}
   onSubmit={submitFinishWork}/>
 )}
   {isTech && currentPage === "PM" && (
