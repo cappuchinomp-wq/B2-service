@@ -193,8 +193,8 @@ export default function B2Service() {
     const [form, setForm] = useState(DEFAULT_FORM);
     const [selectedIssue, setSelectedIssue] = useState('');
     const [finishJob, setFinishJob] = React.useState(null);
-    const [finishImages, setFinishImages] = useState([]);
-    const [finishForm, setFinishForm] = useState({
+    const [finishImages, setFinishImages] = React.useState([]);
+    const [finishForm, setFinishForm] = React.useState({
       workDone: "",
       note: ""
     });
@@ -348,7 +348,16 @@ export default function B2Service() {
 
     function openFinishWorkPage(job) {
     console.log("OPEN FINISH WORK =", job);
+    if (!job) {
+      alert("ไม่พบข้อมูลงาน");
+      return;
+    }
     setFinishJob(job);
+    setFinishForm({
+      workDone: "",
+      note: ""
+    });
+    setFinishImages([]);
     setCurrentPage("FINISH_WORK");
   }
 
@@ -375,7 +384,7 @@ export default function B2Service() {
   }
 
   async function handleFinishImageChange(event) {
-    const files = Array.form(event.target.file || []);
+    const files = Array.from(event.target.files ?? []);
     if (!files.length) {
       setFinishImages([]);
       return;
@@ -400,7 +409,7 @@ async function submitFinishWork() {
     alert("กรุณาระบุงานที่ดำเนินการ");
     return;
   }
-  if (finishImages.length === 0) {
+  if (!Array.isArray(finishImages) || finishImages.length === 0) {
     alert("กรุณาแนบรูปภาพหลังซ่อมอย่างน้อย 1 รูป");
     return;
   }
@@ -747,9 +756,13 @@ function resizeImage(file) {
   <FinishWorkPage
   job={finishJob}
   loading={loading}
+  finishForm={finishForm}
+  finishImages={finishImages}
   onBack={() => {
     setCurrentPage("DETAIL");
   }}
+  onChange={updateFinishForm}
+  onImageChange={handleFinishImageChange}
   onSubmit={submitFinishWork}/>
 )}
   {isTech && currentPage === "PM" && (
@@ -1001,9 +1014,8 @@ role={profile?.role}
         function FinishWorkPage({
           job,
           loading,
-          workDone,
-          note,
-          images,
+          finishForm,
+          finishImages,
           onBack,
           onChange,
           onImageChange,
@@ -1012,13 +1024,25 @@ role={profile?.role}
           if (!job) {
             return null;
           }
+
+          const safeFinishForm = finishForm || {
+            workDone: "",
+            note: ""
+          };
+
+          const setFinishImages = Array.isArray(finishImages)
+          ? finishImages
+          : [];
+
           return (
             <div className="p-4 pb-24">
               <div className="flex items-center mb-5">
                 <button
                 type="button"
                 onClick={onBack}
-                className="text-2xl mr-3">
+                className="text-2xl mr-3"
+                  disabled={loading}
+                  >
                   ←
                 </button>
                 <h2 className="text-xl font-bold">
@@ -1031,10 +1055,11 @@ role={profile?.role}
                 </label>
             <textarea
             rows={5}
-            value={workDone}
+            value={safeFinishForm.workDone}
             onChange={(e) =>
-              onchange("workDone", e.target.value)
+              onChange("workDone", e.target.value)
             }
+            disabled={loading}
             placeholder="กรอกรายละเอียดงานที่ดำเนินการ"
             className="
             w-full
@@ -1044,7 +1069,8 @@ role={profile?.role}
             resize-none
             focus:outline-none
             focus:ring-2
-            focus:ring-green-500"/>
+            focus:ring-green-500
+            disabled:bg-gray-100"/>
               </div>
               <div className="bg-white rounded-3xl p-5 shadow-sm mb-4">
                 <label className="block text-sm font-bold text-gray-700 mb-3">
@@ -1054,15 +1080,17 @@ role={profile?.role}
                 type="file"
                 multiple
                 accept="image/*"
-                onchange={onImageChange}
+                onChange={onImageChange}
+                disabled={loading}
                 className="
                 w-full
                 border
                 rounded-2xl
-                p-3"/>
-                {images.length > 0 && (
+                p-3
+                disabled:bg-gray-100"/>
+                {safeFinishImages.length > 0 && (
                   <div className="grid grid-cols-3 gap-3 mt-4">
-                    {images.map((image, index) => (
+                    {safeFinishImages.map((image, index) => (
                       <div
                       key={index}
                       className="relative">
@@ -1079,6 +1107,11 @@ role={profile?.role}
                     ))}
                     </div>
                 )}
+                {safeFinishImages.length === 0 && (
+                  <div className="text-sm text-gray-400 mt-3">
+                    ยังไม่ได้แนบรูปภาพ
+                    </div>
+                )}
               </div>
               <div className="bg-white rounded-3xl p-5 shadow-sm mb-5">
                 <label className="block text-sm font-bold text-gray-700 mb-2">
@@ -1086,10 +1119,11 @@ role={profile?.role}
                 </label>
                 <textarea
                 rows={4}
-                value={note}
-                onchange={(e) =>
-                  onchange("note", e.target.value)
+                value={safeFinishForm.note}
+                onChange={(e) =>
+                  onChange("note", e.target.value)
                 }
+                disabled={loading}
                 placeholder="ระบุหมายเหตุเพิ่มเติม"
                 className="
                 w-full
@@ -1099,11 +1133,12 @@ role={profile?.role}
                 resize-none
                 focus:outline-none
                 focus:ring-2
-                focus:ring-green-500"/>
+                focus:ring-green-500
+                disabled:bg-gray-100"/>
               </div>
               <button
               type="button"
-              onClick={onsubmit}
+              onClick={onSubmit}
               disabled={loading}
               className="
               w-full
@@ -1118,7 +1153,7 @@ role={profile?.role}
               shadow-md">
                 {loading
                 ? "กำลังบันทึก..."
-              : "ส่งตรวจรับ"
+              : "ยืนยันปิดงาน"
               }
               </button>
             </div>
