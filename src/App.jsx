@@ -415,6 +415,15 @@ async function submitFinishWork() {
   }
   try {
     setLoading(true);
+
+    console.log("===== SEND FINISH WORK =====");
+    console.log("WO =", finishJob?.wo);
+    console.log("USER =", profile?.userId);
+    console.log("WORK DONE =", finishForm?.workDone);
+    console.log("NOTE =", finishForm?.note);
+    console.log("IMAGES =", finishImages);
+    console.log("IMAGE COUNT =", finishImages?.length);
+    
     const result = await apiService.finishWork({
       wo: finishJob.wo,
       userId: profile?.userId || "",
