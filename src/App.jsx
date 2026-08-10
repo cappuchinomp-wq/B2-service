@@ -1774,7 +1774,7 @@ return (
                 <div className="grid grid-cols-2 gap-3">
                   {job.images.map((img,index) =>( 
               <img
-              kry = {index}
+              key = {index}
               src = {img}
               alt = {"image-"+index}
               loading="lazy"
@@ -1818,9 +1818,7 @@ return (
             {
               job.status === "กำลังดำเนินการ" && (
                 <button
-                onClick={()=>{setSelectedJob(job);
-                  setPage("FINISH_WORK");
-                }}
+                onClick={()=>onFinishWork(job)}
                 className="w-full border-2 border-green-600 rounded-xl py-3 text-green-600
                 font-semibold">
                   ปิดงาน
