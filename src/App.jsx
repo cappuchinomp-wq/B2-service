@@ -1030,7 +1030,7 @@ role={profile?.role}
             note: ""
           };
 
-          const setFinishImages = Array.isArray(finishImages)
+          const safeFinishImages = Array.isArray(finishImages)
           ? finishImages
           : [];
 
@@ -1088,7 +1088,7 @@ role={profile?.role}
                 rounded-2xl
                 p-3
                 disabled:bg-gray-100"/>
-                {safeFinishImages.length > 0 && (
+                {safeFinishImages.length > 0 ? (
                   <div className="grid grid-cols-3 gap-3 mt-4">
                     {safeFinishImages.map((image, index) => (
                       <div
@@ -1106,8 +1106,7 @@ role={profile?.role}
                         </div>
                     ))}
                     </div>
-                )}
-                {safeFinishImages.length === 0 && (
+                ) : (
                   <div className="text-sm text-gray-400 mt-3">
                     ยังไม่ได้แนบรูปภาพ
                     </div>
