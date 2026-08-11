@@ -202,6 +202,8 @@ export default function B2Service() {
     const isTech = profile?.role === "TECHNICIAN" ||
     profile?.role === "ADMIN";
     const isAdmin = profile?.role === "ADMIN";
+    const isPM = profile?.role === "PM";
+    const canAccessPM = isPM || isAdmin;
 
     useEffect(() => {
       checkLogin();
@@ -698,6 +700,17 @@ function resizeImage(file) {
       setCurrentPage("HOME");
     }
 
+    function openPMPage() {
+      if (
+        profile?.role !== "PM" &&
+        profile?.role !== "ADMIN"
+      ) {
+        alert("คุณไม่มีสิทธิ์เข้าใช้งาน PM");
+        return;
+      }
+      setCurrentPage("PM");
+    }
+
     return (
       <div className="min-h-screen bg-gray-100">
       
@@ -774,21 +787,19 @@ function resizeImage(file) {
   onImageChange={handleFinishImageChange}
   onSubmit={submitFinishWork}/>
 )}
-  {isTech && currentPage === "PM" && (
-    <div className="p-4">
-      <h2 className="text-xl font-bold">
-        Preventive Maintenance
-      </h2>
-      <p className="text-gray-500 mt-3">
-        Coming Soon
-      </p>
-    </div>
-  )}
 
 {currentPage === "PROFILE" && (
   <ProfilePage 
   profile={profile}
   onLogout={logout}/>
+)}
+
+{currentPage === "PM" && canAccessPM && (
+  <PMPage
+  jobs={jobs}
+  loading={loading}
+  onSelect={openJobDetail}
+  onRefresh={loadWorkOrders}/>
 )}
 
 </div>
@@ -1238,6 +1249,7 @@ role={profile?.role}
         function BottomNavigation({page, setPage, role}) {
 
           const isTech = role === "TECHNICIAN";
+          const isPM = role === "PM";
           const isAdmin = role === "ADMIN";
         
           const menus = [
@@ -1257,7 +1269,7 @@ role={profile?.role}
             }
           ];
           
-          if (isAdmin) {
+          if (isPM || isAdmin) {
             menus.push({
               page: "PM",
               icon: "🛠️",
@@ -1279,15 +1291,23 @@ role={profile?.role}
               style={{
                 gridTemplateColumns: `repeat(${menus.length}, minmax(0,1fr))`
               }}>
-                {menus.map(menus => (
+                {menus.map(menu => (
                   <NavButton
-                  key={menus.page}
-                  active={page === menus.page}
-                  icon={menus.icon}
-                  label={menus.label}
+                  key={menu.page}
+                  active={page === menu.page}
+                  icon={menu.icon}
+                  label={menu.label}
                   onClick={() => {
-                    console.log(menus.page)
-                    setPage(menus.page)}}/>
+                    if (
+                      menu.page === "PM" &&
+                      role !== "PM" &&
+                      role !== "ADMIN"
+                    ) {
+                      return;
+                    }
+                     console.log("Navigation:", menu.page);
+                    setPage(menu.page);
+                  }}/>
                 ))}
               </div>
             </div>
@@ -1446,6 +1466,202 @@ const [tab,setTab] = React.useState("NEW");
           </div>
           </div>
         );
+}
+
+function PMPage({
+  jobs,
+  loading,
+  onSelect,
+  onRefresh
+}) {
+  const [tab, setTab] = React.useState("ALL");
+  const pendingJobs = jobs.filter(job =>
+    String(job.status || "").trim() === "รอตรวจรับ"
+  );
+  const urgentJobs = pendingJobs.filter(job => {
+    const priority = String(job.priority || "").trim().toLowerCase();
+
+    return (
+      priority === "ด่วน" ||
+      priority === "urgent" ||
+      priority === "hight"
+    );
+  });
+  const filteredJobs =
+  tab === "URGENT"
+  ? urgentJobs
+  : pendingJobs;
+
+  return (
+    <div className="p-4 pb-24">
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h2 className="text-2xl font-bold">
+            งานรอตรวจรับ
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">
+            ตรวจสอบงานที่ช่างดำเนินการเสร็จแล้ว
+          </p>
+        </div>
+        <button
+        type="button"
+        onClick={onRefresh}
+        disabled={loading}
+        className="
+        bg-green-600
+        text-white
+        px-4
+        py-2
+        rounded-xl
+        text-sm
+        font-bold
+        disabled:bg-gray-400">
+          {loading ? "กำลังโหลด..." : "รีเฟรช"}
+        </button>
+      </div>
+      <div className="grid grid-cols-2 gap-3 mb-5">
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
+          <div className="text-sm text-gray-500">
+            งานรอตรวจรับ
+          </div>
+          <div className="text-2xl font-bold text-green-600 mt-1">
+            {pendingJobs.length}
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
+          <div className="text-sm text-gray-500">
+            งานด่วน
+          </div>
+          <div className="text-2xl font-bold text-orange-500 mt-1">
+            {urgentJobs.length}
+          </div>
+        </div>
+      </div>
+      <div className="flex bg-gray-100 rounded-xl p-1 mb-5">
+        <button
+        type="button"
+        onClick={() => setTab("ALL")}
+        className={`
+          flex-1
+          py-2
+          rounded-lg
+          text-sm
+          ${
+            tab === "ALL"
+            ? "bg-white shadow text-green-600 font-bold"
+            : "text-gray-500"
+          }`}>
+            ทั้งหมด ({pendingJobs.length})
+          </button>
+          <button
+          type="button"
+          onClick={() => setTab("URGENT")}
+          className={`
+            flex-1
+            py-2
+            rounded-lg
+            text-sm
+            ${
+              tab === "URGENT"
+              ? "bg-white shadow text-orange-500 font-bold"
+              : "text-gray-500"
+            }`}>
+              ด่วน ({urgentJobs.length})
+            </button>
+      </div>
+      {loading && (
+        <div className="text-center py-10 text-gray-400">
+          กำลังโหลดข้อมูล...
+          </div>
+      )}
+      {!loading && filteredJobs.length === 0 && (
+        <div className="
+        bg-white
+        rounded-3xl
+        p-8
+        text-center
+        shadow-sm">
+          <div className="text-5xl mb-3">
+            ✓
+          </div>
+          <div className="font-bold text-gray-700">
+            ไม่มีงานรอตรวจรับ
+          </div>
+          <div className="text-sm text-gray-400 mt-1">
+            ขณะนี้ยังไม่มีงานที่รอการตรวจรับ
+          </div>
+          </div>
+      )}
+      {!loading && filteredJobs.length > 0 && (
+        <div className="space-y-4">
+          {filteredJobs.map(job => (
+            <div
+            key={job.wo}
+            className="
+            bg-white
+            rounded-3xl
+            p-4
+            shadow-sm
+            border
+            border-gray-100">
+              <div className="flex-just-between gap-3">
+                <div className="min-w-0">
+                  <div className="font-bold text-lg">
+                    {job.wo}
+                  </div>
+                  <div className="text-sm text-gray-500 mt-1">
+                    ห้อง {job.room || "-"}
+                  </div>
+                  <div className="text-sm my-2 line-clamp-2">
+                    {job.problem || "-"}
+                  </div>
+                  <div className="text-sm text-gray-500 mt-2">
+                    ช่าง: {job.staff || "-"}
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <div className="text-xs text-gray-500">
+                    {job.finish || ""}
+                  </div>
+                  <span className="
+                  text-xs
+                  bg-orange-50
+                  text-orange-600
+                  border
+                  border-orange-200
+                  rounded-full
+                  px-3
+                  py-1
+                  whitespace-nowrap">
+                    รอตรวจรับ
+                  </span>
+                </div>
+              </div>
+              <div className="mt-3">
+                <PriorityBadge
+                priority={job.priority}/>
+              </div>
+              <button
+              type="button"
+              onClick={() => onselect(job)}
+              className="
+              w-full
+              mt-4
+              bg-orange-500
+              hover:bg-orange-600
+              text-white
+              rounded-2xl
+              py-3
+              font-bold
+              transition">
+                ตรวจรับงาน
+              </button>
+              </div>
+          ))}
+          </div>
+      )}
+    </div>
+  );
 }
 
 function LoginPage({onLogin}){
