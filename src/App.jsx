@@ -202,7 +202,8 @@ export default function B2Service() {
     const isTech = profile?.role === "TECHNICIAN" ||
     profile?.role === "ADMIN";
     const isAdmin = profile?.role === "ADMIN";
-    const isPM = profile?.role === "PM";
+    const isPM = profile?.role === "PM" ||
+    profile?.role === "ADMIN";
     const canAccessPM = isPM || isAdmin;
 
     useEffect(() => {
@@ -728,6 +729,7 @@ function resizeImage(file) {
           onRepair={() => setCurrentPage("REPAIR")}
           onTrack={() => setCurrentPage("TRACK")}
           onMyJob={() => setCurrentPage("MYJOB")}
+          onPM={() => setCurrentPage("PM")}
           onSelectJob={openJobDetail}
           />
         )}
@@ -1604,7 +1606,7 @@ function PMPage({
             shadow-sm
             border
             border-gray-100">
-              <div className="flex-just-between gap-3">
+              <div className="flex-justify-between gap-3">
                 <div className="min-w-0">
                   <div className="font-bold text-lg">
                     {job.wo}
@@ -1643,7 +1645,7 @@ function PMPage({
               </div>
               <button
               type="button"
-              onClick={() => onselect(job)}
+              onClick={() => onSelect(job)}
               className="
               w-full
               mt-4
@@ -1730,6 +1732,7 @@ function LoginPage({onLogin}){
           onRepair,
           onTrack,
           onMyJob,
+          onPM,
           onSelectJob
         }){
           const latest = React.useMemo(
@@ -1737,6 +1740,8 @@ function LoginPage({onLogin}){
             [jobs]
           );
           const isAdmin = profile?.role === "ADMIN";
+          const isPM = profile?.role === "PM" ||
+          profile?.role === "ADMIN";
           return(
             <div className="p-4">
               <div className="grid grid-cols-2 gap-4">
@@ -1771,6 +1776,21 @@ function LoginPage({onLogin}){
                   งานของฉัน
                   </div>
                 </button>
+        )}
+        {isPM && (
+          <button
+          onClick={onPM}
+          className="bg-white rounded-3xl p-6 shadow">
+            <div className="text-5xl">
+              🔧
+            </div>
+            <div className="mt-3 font-bold">
+              PM
+            </div>
+            <div className="text-xs text-gray-400 mt-1">
+              ตรวจรับงาน
+            </div>
+          </button>
         )}
                 <button
                 className="bg-white rounded-3xl p-6 shadow">
