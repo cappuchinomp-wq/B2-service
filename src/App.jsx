@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState} from "react";
+import React, { act, useEffect, useMemo, useState} from "react";
 
 const CONFIG = {
     LIFF_ID: "2010077744-5kECosJ0",
@@ -115,8 +115,25 @@ const apiService = {
         ...payload
       })
     });
-   }
-  };
+  },
+
+  savePMApproval(payload) {
+    return this.request(
+      CONFIG.API_URL,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+          "text/plain;charset=UTF-8"
+        },
+        body: JSON.stringify({
+          action: "savePMApproval",
+          ...payload
+        })
+      }
+    );
+  }
+};
 
 const QUICK_ISSUES = [
     '💡 ไฟฟ้า',  
@@ -190,6 +207,11 @@ export default function B2Service() {
     const [jobs, setJobs] = useState([]);
     const [currentPage, setCurrentPage] = useState("HOME");
     const [selectedJob, setSelectedJob] = useState(null);
+    const [approvalForm, setApprovalForm] = useState({
+      quality: "",
+      remark: ""
+    });
+    const [approvalImages, setApprovalImages] = useState([]);
     const [form, setForm] = useState(DEFAULT_FORM);
     const [selectedIssue, setSelectedIssue] = useState('');
     const [finishJob, setFinishJob] = React.useState(null);
@@ -403,6 +425,29 @@ export default function B2Service() {
     }
   }
 
+  async function handleApprovalImageChange(event) {
+    const files = Array.form(event.target.files || []);
+    if (!files.length) {
+      setApprovalImages([]);
+      return;
+    }
+    try {
+      const imageList =
+      await Promise.all(
+        files.map(file => resizeImage(file))
+      );
+      setApprovalImages(
+        imageList.filter(Boolean)
+      );
+    } catch (error) {
+      console.error(
+        "Approval image error:",
+        error
+      );
+      alert("ไม่สามารถเตรียมรูปภาพได้");
+    }
+  }
+
 async function submitFinishWork() {
   if (!finishJob) {
     alert("ไม่พบข้อมูลงาน");
@@ -494,6 +539,97 @@ async function submitFinishWork() {
     }
     
   }    
+
+  async function submitPMApproval(result) {
+
+    if (!selectedJob) {
+      alert("ไม่พบข้อมูลงาน");
+      return;
+    }
+    if (
+      profile?.role !== "PM" &&
+      profile?.role !== "ADMIN"
+    ) {
+      alert("คุณไม่มีสิทธิ์ตรวจรับงาน");
+      return;
+    }
+    if (!approvalForm.quality) {
+      alert("กรุณาระบุคุณภาพงานซ่อม");
+      return;
+    }
+    if (result === "ตีกลับ" && 
+      !approvalForm.remark.trim()) {
+      alert("กรุณาระบุเหตุผลที่ตีกลับ");
+      return;
+    }
+    try {
+
+      setLoading(true);
+      console.log("===== PM APPROVAL =====");
+      console.log("WO =", selectedJob.wo);
+      console.log("USER =", profile?.userId);
+      console.log("INSPECTOR =", profile?.displayName);
+      console.log("RESULT =", result);
+      console.log("QUALITY =", approvalForm.quality);
+      console.log("REMARK =", approvalForm.remark);
+      console.log("IMAGES =", approvalImages);
+
+      const response = 
+      await apiService.savePMApproval({
+        wo: selectedJob.wo,
+        userId: profile?.userId || "",
+        inspector: profile?.displayName || "",
+        result: result,
+        quality: approvalForm.quality,
+        remark: approvalForm.remark,
+        images: approvalImages
+      });
+
+      if (!response.success) {
+        throw new Error(
+          response.message ||
+          "ไม่สามารถบันทึกผลตรวจรับได้"
+        );
+      }
+
+      await loadWorkOrders();
+
+      const detail = await apiService.getWorkOrderDetail(
+        selectedJob.wo
+      );
+
+      if (detail.success) {
+        setSelectedJob(detail.data);
+      }
+
+      setApprovalForm({
+        quality: "",
+        remark: ""
+      });
+
+      setApprovalImages([]);
+
+      setCurrentPage("PM");
+
+      alert(
+        result === "อนุมัติ"
+        ? "อนุมัติงานเรียบร้อย"
+        : "ตีกลับงานเรียบร้อย"
+      );
+      
+    } catch (error) {
+      console.error(
+        "submitPMApproval error:",
+        error
+      );
+      alert(
+        error.message ||
+        "ไม่สามารถบันทึกผลตรวจรับได้"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
 
     function updateForm(field, value) {
       setForm(prev => ({
@@ -712,6 +848,27 @@ function resizeImage(file) {
       setCurrentPage("PM");
     }
 
+    function openPMApproval(job) {
+      if (!job) {
+        alert("ไม่พบข้อมูลงาน");
+        return;
+      }
+      if (
+        profile?.role !== "PM" &&
+        profile?.role !== "ADMIN"
+      ) {
+        alert("คุณไม่มีสิทธิ์ตรวจรับงาน");
+        return;
+      }
+      setSelectedJob(job);
+      setApprovalForm({
+        quality: "",
+        remark: ""
+      });
+      setApprovalImages([]);
+      setCurrentPage("PM_APPROVAL");
+    }
+
     return (
       <div className="min-h-screen bg-gray-100">
       
@@ -729,8 +886,17 @@ function resizeImage(file) {
           onRepair={() => setCurrentPage("REPAIR")}
           onTrack={() => setCurrentPage("TRACK")}
           onMyJob={() => setCurrentPage("MYJOB")}
-          onPM={() => setCurrentPage("PM")}
           onSelectJob={openJobDetail}
+          onPM={() => {
+            if (
+              profile?.role !== "PM" &&
+              profile?.role !== "ADMIN"
+            ) {
+              alert("คุณไม่มีสิทธิ์เข้าถึง PM");
+              return;
+            }
+            setCurrentPage("PM");
+          }}
           />
         )}
 
@@ -796,12 +962,56 @@ function resizeImage(file) {
   onLogout={logout}/>
 )}
 
-{currentPage === "PM" && canAccessPM && (
+{currentPage === "PM" && (
+  (profile?.role === "PM" ||
+    profile?.role === "ADMIN")
+    ? (
   <PMPage
   jobs={jobs}
   loading={loading}
-  onSelect={openJobDetail}
+  onSelect={openPMApproval}
   onRefresh={loadWorkOrders}/>
+) : (
+  <div className="p-6 text-center">
+    <div className="text-5xl mb-3">
+      🔒
+      </div>
+      <div className="font-bold text-gray-700">
+        ไม่มีสิทธิ์เข้าถึง
+        </div>
+        </div>
+)
+)}
+
+{currentPage === "PM_APPROVAL" && (
+  (profile?.role === "PM" ||
+    profile?.role === "ADMIN")
+    ? (
+      <PMApprovalPage
+      job={selectedJob}
+      loading={loading}
+      approvalForm={approvalForm}
+      approvalImages={approvalImages}
+      onBack={() => {
+        setCurrentPage("PM");
+      }}
+      onChange={(field, value) => {
+        setApprovalForm(prev => ({
+          ...prev,
+          [field]: value
+        }));
+      }}
+      onImageChange={
+        handleApprovalImageChange
+      }
+      onApprove={() =>
+        submitPMApproval("อนุมัติ")
+      }
+      onReject={() =>
+        submitPMApproval("ตีกลับ")
+      }/>
+    )
+    : null
 )}
 
 </div>
@@ -1666,6 +1876,315 @@ function PMPage({
   );
 }
 
+function PMApprovalPage({
+  job,
+  loading,
+  approvalForm,
+  approvalImages,
+  onBack,
+  onChange,
+  onImageChange,
+  onApprove,
+  onReject
+}) {
+  if (!job) {
+    return (
+      <div className="p-4">
+        <div className="
+        bg-white
+        rounded-3xl
+        p-8
+        text-center
+        shadow-sm">
+          <div className="text-5xl mb-3">
+            📭
+          </div>
+          <div className="font-bold text-gray-700">
+            ไม่พบข้อมูลงาน
+          </div>
+          <button
+          type="button"
+          onClick={onBack}
+          className="
+          mt-5
+          bg-green-600
+          text-white
+          px-5
+          py-3
+          rounded-xl
+          font-bold">
+            ← กลับ
+          </button>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="p-4 pb-24">
+      <div className="flex items-center mb-5">
+        <button
+        type="button"
+        onClick={onBack}
+        className="
+        mr-3
+        text-2xl">
+          ←
+        </button>
+        <div>
+          <h2 className="text-xl font-bold">
+            ตรวจรับงาน
+          </h2>
+          <p className="text-sm text-gray-500">
+            PM / Supervisor
+          </p>
+        </div>
+      </div>
+      <div className="
+      bg-white
+      rounded-3xl
+      shadow-sm
+      p-5
+      mb-4">
+        <div className="
+        flex
+        justify-between
+        items-start
+        mb-4">
+          <div>
+            <div className="text-xl font-bold">
+              {job.wo}
+            </div>
+            <div className="text-sm text-gray-500 mt-1">
+              ห้อง {job.room || "-"}
+            </div>
+          </div>
+          <StatusBadge
+          status={job.status}/>
+        </div>
+        <div className="space-y-3 text-sm">
+          <div>
+           <span className="text-gray-500">
+            ประเภทงาน
+           </span>
+           <div className="font-medium">
+            {job.issueType || "-"}
+           </div>
+          </div>
+          <div>
+            <span className="text-gray-500">
+              ปัญหา
+            </span>
+            <div className="font-medium">
+              {job.problem || "-"}
+            </div>
+          </div>
+          <div>
+            <span className="text-gray-500">
+              ช่างผู้ดำเนินการ
+            </span>
+            <div className="font-medium">
+              {job.staff || "-"}
+            </div>
+          </div>
+          <div>
+            <span className="text-gray-500">
+              รายละเอียดแก้ไข
+            </span>
+            <div className="font-medium">
+              {job.solution ||
+              job.workDone ||
+              "-"}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="
+      bg-white
+      rounded-3xl
+      shadow-sm
+      p-5
+      mb-4">
+        <h3 className="font-bold mb-3">
+          📷 รูปภาพงานซ่อม
+        </h3>
+        {job.images?.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3">
+            {job.images.map(
+              (img, index) => (
+                <img
+                key={index}
+                src={img}
+                alt={`work-${index}`}
+                loading="lazy"
+                className="
+                w-full
+                h-36
+                object-cover
+                rounded-xl
+                border"/>
+              )
+            )}
+            </div>
+
+        ) : (
+          <div className="
+          text-sm
+          text-gray-400">
+            ไม่มีรูปภาพ
+            </div>
+               )}
+               </div>
+            <div className="
+            bg-white
+            rounded-3xl
+            shadow-sm
+            p-5
+            mb-4">
+              <h3 className="font-bold mb-3">
+                คุณภาพงาน
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  "ดีมาก",
+                  "ดี",
+                  "พอใช้",
+                  "ต้องแก้ไข"
+                ].map(option => (
+                  <button
+                  key={option}
+                  type="button"
+                  onClick={() =>
+                    onChange(
+                      "quality",
+                      option
+                    )
+                  }
+                  className={`
+                    py-3
+                    rounded-xl
+                    border
+                    font-medium
+                    ${
+                      approvalForm.quality === option
+                      ? "bg-green-100 border-green-500 text-green-700"
+                      : "bg-white border-gray-200 text-gray-600"
+                    }`}>
+                      {option}
+                    </button>
+                ))}
+      </div>
+    </div>
+    <div className="
+    bg-white
+    rounded-3xl
+    shadowm-sm
+    p-5
+    mb-4">
+      <h3 className="font-bold mb-3">
+        หมายเหตุ
+      </h3>
+      <textarea
+      value={approvalForm.remark}
+      onChange={e =>
+        onChange(
+          "remark",
+          e.target.value
+        )
+      }
+      rows={4}
+      placeholder="ระบุหมายเหตุเพิ่มเติม"
+      className="
+      w-full
+      border
+      border-gray-200
+      rounded-xl
+      p-3
+      resize-none
+      focus:outline-none
+      focus:ring-2
+      focus:ring-green-500"/>
+    </div>
+    <div className="
+    bg-white
+    rounded-3xl
+    shadow-sm
+    p-5
+    mb-5">
+      <h3 className="font-bold mb-3">
+        📸 รูปภาพหลังตรวจรับ
+      </h3>
+      <input
+      type="file"
+      accept="image/*"
+      multiple
+      onChange={onImageChange}
+      className="
+      w-full
+      text-sm"/>
+      {approvalImages?.length > 0 && (
+        <div className="
+        grid
+        grid-cols-2
+        gap-3
+        mt-4">
+          {approvalImages.map(
+            (img, index) => (
+              <img
+              key={index}
+              src={img.data}
+              alt={`approval-${index}`}
+              className="
+              w-full
+              h-32
+              object-cover
+              rounded-xl
+              border"/>
+            )
+          )}
+          </div>
+      )}
+    </div>
+    <div className="
+    grid
+    grid-cols-2
+    gap-3">
+      <button
+      type="button"
+      disabled={loading}
+      onClick={onReject}
+      className="
+      py-4
+      rounded-2xl
+      bg-red-500
+      hover:bg-red-600
+      text-white
+      font-bold
+      disabled:bg-gray-400">
+        {loading
+        ? "กำลังบันทึก..."
+      : "↩ ตีกลับ"}
+      </button>
+      <button
+      type="button"
+      disabled={loading}
+      onClick={onApprove}
+      className="
+      py-4
+      rounded-2xl
+      bg-green-600
+      hover:bg-green-700
+      text-white
+      font-bold
+      disabled:bg-gray-400">
+        {loading
+        ? "กำลังบันทึก..."
+      : "✓ อนุมัติ"}
+      </button>
+    </div>
+    </div>
+  );
+}
+
 function LoginPage({onLogin}){
   const [username,setUsername] = React.useState("");
   const [password,setPassword] = React.useState("");
@@ -1779,16 +2298,17 @@ function LoginPage({onLogin}){
         )}
         {isPM && (
           <button
+          type="button"
           onClick={onPM}
-          className="bg-white rounded-3xl p-6 shadow">
+          className="bg-white rounded-3xl p-6 shadow border border-green-100 hover:shadow-md transition">
             <div className="text-5xl">
-              🔧
+              🧑‍💼
             </div>
             <div className="mt-3 font-bold">
-              PM
+              PM ตรวจรับงาน
             </div>
             <div className="text-xs text-gray-400 mt-1">
-              ตรวจรับงาน
+              ตรวจสอบและอนุมัติงาน
             </div>
           </button>
         )}
