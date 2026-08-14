@@ -1926,11 +1926,20 @@ function PMApprovalPage({
   const beforeImages =
   Array.isArray(job.beforeImages)
   ? job.beforeImages
-  : [];
+  : (Array.isArray(job.images)
+? job.images
+: []
+);
   const afterImages =
   Array.isArray(job.afterImages)
   ? job.afterImages
-  : [];
+  : (Array.isArray(job.completion?.afterImages)
+? job.completion.afterImages
+: (Array.isArray(job.completion?.images)
+? job.completion.images
+: []
+)
+);
   const safeApprovalImages =
   Array.isArray(approvalImages)
   ? approvalImages
@@ -2027,29 +2036,40 @@ function PMApprovalPage({
         <h3 className="font-bold mb-3">
           📷 รูปภาพก่อนซ่อม
         </h3>
-        {job.images?.length > 0 ? (
+        {beforeImages.length > 0 ? (
           <div className="grid grid-cols-2 gap-3">
             {beforeImages.map(
-              (img, index) => (
+              (img, index) => {
+                const imageUrl =
+                typeof img === "string"
+                ? img
+                :img?.url || img?.data || "";
+                if (!imageUrl) {
+                  return null;
+                }
+                return(
                 <img
                 key={index}
-                src={img}
+                src={imageUrl}
                 alt={`ก่อนซ่อม ${index + 1}`}
                 loading="lazy"
                 className="
                 w-full
-                h-36
-                object-cover
+                h-auto
+                max-h-72
+                object-contain
                 rounded-xl
                 border
+                bg-gray-50
                 cursor-pointer"
                 onClick={() => {
                   window.open(
-                    img,
+                    imageUrl,
                     "_blank"
                   );
                 }}/>
-              )
+              );
+            }
             )}
             </div>
 
@@ -2075,26 +2095,37 @@ function PMApprovalPage({
               {afterImages.length > 0 ? (
               <div className="grid grid-cols-2 gap-3">
                 {afterImages.map(
-                  (img, index) => (
+                  (img, index) => {
+                    const imageUrl =
+                    typeof img === "string"
+                    ? img
+                    : img?.url || img?.data || "";
+                    if (!imageUrl) {
+                      return null;
+                    }
+                    return (
                     <img
                     key={index}
-                    src={img}
+                    src={imageUrl}
                     alt={`หลังซ่อม ${index + 1}`}
                     loading="lazy"
                     className="
                     w-full
-                    h-36
-                    object-cover
+                    h-auto
+                    max-h-72
+                    object-contain
                     rounded-xl
                     border
-                    cuesor-pointer"
+                    bg-gray-50
+                    cursor-pointer"
                     onClick={() => {
                       window.open(
-                        img,
+                        imageUrl,
                         "_blank"
                       );
                     }}/>
-                  )
+                  );
+                }
                 )}
                 </div>
               ) : (
@@ -2138,7 +2169,7 @@ function PMApprovalPage({
                     border
                     font-medium
                     ${
-                      approvalForm.quality === option
+                      safeApprovalForm.quality === option
                       ? "bg-green-100 border-green-500 text-green-700"
                       : "bg-white border-gray-200 text-gray-600"
                     }`}>
@@ -2205,7 +2236,10 @@ function PMApprovalPage({
             (img, index) => (
               <img
               key={index}
-              src={img.data}
+              src={typeof img === "string"
+                ? img
+                : img?.data || img?.url || ""
+              }
               alt={`approval-${index}`}
               className="
               w-full
