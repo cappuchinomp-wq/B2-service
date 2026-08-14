@@ -2652,8 +2652,9 @@ return (
               alt = {"image-"+index}
               loading="lazy"
               className="
-              w-full
+              w-auto  
               h-auto
+              max-h-96
               max-h-96
               object-contain
               rounded-xl
