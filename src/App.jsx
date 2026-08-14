@@ -2653,11 +2653,16 @@ return (
               loading="lazy"
               className="
               w-full
-              h-36
-              object-cover
+              h-auto
+              max-h-96
+              object-contain
               rounded-xl
               border
+              bg-gray-50
               cursor-pointer"
+              onClick={() => {
+              window.open(img, "_blank");
+              }}
               />
             ))}
             </div>
