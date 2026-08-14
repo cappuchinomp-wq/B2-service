@@ -1919,6 +1919,23 @@ function PMApprovalPage({
       </div>
     );
   }
+  const safeApprovalForm = approvalForm || {
+    quality: "",
+    remark: ""
+  };
+  const beforeImages =
+  Array.isArray(job.beforeImages)
+  ? job.beforeImages
+  : [];
+  const afterImages =
+  Array.isArray(job.afterImages)
+  ? job.afterImages
+  : [];
+  const safeApprovalImages =
+  Array.isArray(approvalImages)
+  ? approvalImages
+  : [];
+
   return (
     <div className="p-4 pb-24">
       <div className="flex items-center mb-5">
@@ -1983,15 +2000,18 @@ function PMApprovalPage({
               ช่างผู้ดำเนินการ
             </span>
             <div className="font-medium">
-              {job.staff || "-"}
+              {job.staff || 
+              job.completion?.staff ||
+              "-"}
             </div>
           </div>
           <div>
             <span className="text-gray-500">
               รายละเอียดแก้ไข
             </span>
-            <div className="font-medium">
-              {job.solution ||
+            <div className="font-medium whitespace-pre-wrap">
+              {job.completion?.solution ||
+              job.solution ||
               job.workDone ||
               "-"}
             </div>
@@ -2009,19 +2029,26 @@ function PMApprovalPage({
         </h3>
         {job.images?.length > 0 ? (
           <div className="grid grid-cols-2 gap-3">
-            {job.images.map(
+            {beforeImages.map(
               (img, index) => (
                 <img
                 key={index}
                 src={img}
-                alt={`work-${index}`}
+                alt={`ก่อนซ่อม ${index + 1}`}
                 loading="lazy"
                 className="
                 w-full
                 h-36
                 object-cover
                 rounded-xl
-                border"/>
+                border
+                cursor-pointer"
+                onClick={() => {
+                  window.open(
+                    img,
+                    "_blank"
+                  );
+                }}/>
               )
             )}
             </div>
@@ -2029,8 +2056,10 @@ function PMApprovalPage({
         ) : (
           <div className="
           text-sm
-          text-gray-400">
-            ไม่มีรูปภาพ
+          text-gray-400
+          py-4
+          text-center">
+            ไม่มีรูปภาพก่อนซ่อม
             </div>
                )}
                </div>
@@ -2041,9 +2070,53 @@ function PMApprovalPage({
             p-5
             mb-4">
               <h3 className="font-bold mb-3">
-                คุณภาพงาน
+                📸 รูปภาพหลังซ่อม
               </h3>
+              {afterImages.length > 0 ? (
               <div className="grid grid-cols-2 gap-3">
+                {afterImages.map(
+                  (img, index) => (
+                    <img
+                    key={index}
+                    src={img}
+                    alt={`หลังซ่อม ${index + 1}`}
+                    loading="lazy"
+                    className="
+                    w-full
+                    h-36
+                    object-cover
+                    rounded-xl
+                    border
+                    cuesor-pointer"
+                    onClick={() => {
+                      window.open(
+                        img,
+                        "_blank"
+                      );
+                    }}/>
+                  )
+                )}
+                </div>
+              ) : (
+                <div className="
+                text-sm
+                text-gray-400
+                py-4
+                text-center">
+                  ไม่มีรูปภาพหลังซ่อม
+                  </div>
+              )}
+              </div>
+              <div className="
+              bg-white
+              rounded-3xl
+              shadow-sm
+              p-5
+              mb-4">
+                <h3 className="font-bold mb-3">
+                  คุณภาพงาน
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
                 {[
                   "ดีมาก",
                   "ดี",
@@ -2077,14 +2150,14 @@ function PMApprovalPage({
     <div className="
     bg-white
     rounded-3xl
-    shadowm-sm
+    shadow-sm
     p-5
     mb-4">
       <h3 className="font-bold mb-3">
         หมายเหตุ
       </h3>
       <textarea
-      value={approvalForm.remark}
+      value={safeApprovalForm.remark}
       onChange={e =>
         onChange(
           "remark",
@@ -2118,16 +2191,17 @@ function PMApprovalPage({
       accept="image/*"
       multiple
       onChange={onImageChange}
+      disabled={loading}
       className="
       w-full
       text-sm"/>
-      {approvalImages?.length > 0 && (
+      {safeApprovalImages.length > 0 && (
         <div className="
         grid
         grid-cols-2
         gap-3
         mt-4">
-          {approvalImages.map(
+          {safeApprovalImages.map(
             (img, index) => (
               <img
               key={index}
