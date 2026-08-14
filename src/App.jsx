@@ -2025,7 +2025,7 @@ function PMApprovalPage({
       p-5
       mb-4">
         <h3 className="font-bold mb-3">
-          📷 รูปภาพงานซ่อม
+          📷 รูปภาพก่อนซ่อม
         </h3>
         {job.images?.length > 0 ? (
           <div className="grid grid-cols-2 gap-3">
@@ -2652,9 +2652,8 @@ return (
               alt = {"image-"+index}
               loading="lazy"
               className="
-              w-auto  
+              w-full
               h-auto
-              max-h-96
               max-h-96
               object-contain
               rounded-xl
