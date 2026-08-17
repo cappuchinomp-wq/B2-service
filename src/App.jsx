@@ -1923,23 +1923,90 @@ function PMApprovalPage({
     quality: "",
     remark: ""
   };
+
+  function normalizeImageUrl(value) {
+    if (!value) {
+      return "";
+    }
+    if (typeof value === "object") {
+      value =
+      value.url ||
+      value.data ||
+      value.src ||
+      "";
+    }
+    const url =
+    String(value).trim();
+    if (!url) {
+      return "";
+    }
+      const driveFile =
+      url.match(
+        /\/file\/d\/([^/]+)/
+      );
+      if (
+        driveFile &&
+        driveFile[1]
+      ) {
+        return (
+          "https://drive.google.com/thumbnail?id=" +
+          encodeURIComponent(
+            driveFile[1]
+          ) +
+          "&sz=w1200"
+        );
+      }
+      const driveId =
+      url.match(
+        /[?&]id=([^&]+)/
+      );
+      if (
+        driveId &&
+        driveId[1]
+      ) {
+        return (
+          "https://drive.google.com/thumbnail?id=" +
+          encodeURIComponent(
+            driveId[1]
+          ) +
+          "&sz=w1200"
+        );
+      }
+      return url;
+    }
+
+    function normalizeImageList(value) {
+      if (!value) {
+        return [];
+      }
+      let list = [];
+
+      if (Array.isArray(value)) {
+        list = value;
+      } else {
+        list =
+        String(value).split(/[\n,]+/).map(item => item.trim()).filter(Boolean);
+      }
+      return list.map(item => normalizeImageUrl(item)).filter(Boolean);
+      }
+  
   const beforeImages =
-  Array.isArray(job.beforeImages)
-  ? job.beforeImages
-  : (Array.isArray(job.images)
-? job.images
-: []
-);
+  normalizeImageList(
+    job.beforeImages?.length
+    ? job.beforeImages
+    : job.images
+  );
+
   const afterImages =
-  Array.isArray(job.afterImages)
-  ? job.afterImages
-  : (Array.isArray(job.completion?.afterImages)
-? job.completion.afterImages
-: (Array.isArray(job.completion?.images)
-? job.completion.images
-: []
-)
-);
+  normalizeImageList(
+    job.afterImages?.length
+    ? job.afterImages
+    : job.completion?.afterImages?.length
+    ? job.completion.afterImages
+    : job.completion?.images?.length
+    ? job.completion.images
+    : job.completion?.finishImages
+  );
   const safeApprovalImages =
   Array.isArray(approvalImages)
   ? approvalImages
@@ -2039,15 +2106,8 @@ function PMApprovalPage({
         {beforeImages.length > 0 ? (
           <div className="grid grid-cols-2 gap-3">
             {beforeImages.map(
-              (img, index) => {
-                const imageUrl =
-                typeof img === "string"
-                ? img
-                :img?.url || img?.data || "";
-                if (!imageUrl) {
-                  return null;
-                }
-                return(
+              (imageUrl, index) => (
+                
                 <img
                 key={index}
                 src={imageUrl}
@@ -2068,8 +2128,7 @@ function PMApprovalPage({
                     "_blank"
                   );
                 }}/>
-              );
-            }
+              )
             )}
             </div>
 
@@ -2095,15 +2154,8 @@ function PMApprovalPage({
               {afterImages.length > 0 ? (
               <div className="grid grid-cols-2 gap-3">
                 {afterImages.map(
-                  (img, index) => {
-                    const imageUrl =
-                    typeof img === "string"
-                    ? img
-                    : img?.url || img?.data || "";
-                    if (!imageUrl) {
-                      return null;
-                    }
-                    return (
+                  (imageUrl, index) => (
+                   
                     <img
                     key={index}
                     src={imageUrl}
@@ -2124,8 +2176,7 @@ function PMApprovalPage({
                         "_blank"
                       );
                     }}/>
-                  );
-                }
+                  )
                 )}
                 </div>
               ) : (
