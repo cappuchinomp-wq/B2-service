@@ -2656,6 +2656,37 @@ return (
 );
 }
 
+function getDisplayImageUrl(url) {
+  if (!url) {
+    return "";
+  }
+  let value = String(url).trim();
+  if (!value) {
+    return "";
+  }
+  let match = value.match(
+    /drive\.google\.com\/file\/d\/([^/]+)/
+  );
+  if (match && match[1]) {
+    return (
+      "https://drive.google.com/thumbnail?id=" +
+      encodeURIComponent(match[1]) +
+      "&sz=w1200"
+    );
+  }
+  match = value.match(
+    /[?&]id=([^&]+)/
+  );
+  if (match && match[1]) {
+    return (
+      "https://drive.google.com/thumbnail?id=" +
+      encodeURIComponent(match[1]) +
+      "&sz=w1200"
+    );
+  }
+  return value;
+}
+
         function JobDetail({
           job,
           isTech,
