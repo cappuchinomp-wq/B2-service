@@ -426,7 +426,10 @@ export default function B2Service() {
   }
 
   async function handleApprovalImageChange(event) {
-    const files = Array.form(event.target.files || []);
+    const files = Array.form(event?.target?.files ?? []);
+    console.log("Approval Files =",
+      files
+    );
     if (!files.length) {
       setApprovalImages([]);
       return;
@@ -436,8 +439,13 @@ export default function B2Service() {
       await Promise.all(
         files.map(file => resizeImage(file))
       );
+      const validImages =
+      imageList.filter(Boolean);
+      console.log("Approval Images =",
+        validImages
+      );
       setApprovalImages(
-        imageList.filter(Boolean)
+        validImages
       );
     } catch (error) {
       console.error(
@@ -445,6 +453,7 @@ export default function B2Service() {
         error
       );
       alert("ไม่สามารถเตรียมรูปภาพได้");
+      setApprovalImages([]);
     }
   }
 
