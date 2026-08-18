@@ -426,7 +426,7 @@ export default function B2Service() {
   }
 
   async function handleApprovalImageChange(event) {
-    const files = Array.form(event?.target?.files ?? []);
+    const files = Array.from(event?.target?.files ?? []);
     console.log("Approval Files =",
       files
     );
