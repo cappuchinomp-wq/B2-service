@@ -1935,44 +1935,37 @@ function PMApprovalPage({
       value.src ||
       "";
     }
-    const url =
-    String(value).trim();
+    const url = String(value).trim();
     if (!url) {
       return "";
     }
-      const driveFile =
-      url.match(
-        /\/file\/d\/([^/]+)/
-      );
-      if (
-        driveFile &&
-        driveFile[1]
-      ) {
-        return (
-          "https://drive.google.com/thumbnail?id=" +
-          encodeURIComponent(
-            driveFile[1]
-          ) +
-          "&sz=w1200"
-        );
-      }
-      const driveId =
-      url.match(
-        /[?&]id=([^&]+)/
-      );
-      if (
-        driveId &&
-        driveId[1]
-      ) {
-        return (
-          "https://drive.google.com/thumbnail?id=" +
-          encodeURIComponent(
-            driveId[1]
-          ) +
-          "&sz=w1200"
-        );
-      }
+     if (url.indexOf(
+      "https://drive.google.com/thumbnail"
+     ) === 0
+    ) {
       return url;
+    }
+    let match = url.match(
+      /drive\.google\.com\/file\/d\/([^/]+)/
+    );
+    if (match && match[1]) {
+      return (
+        "https://drive.google.com/thumbnail?id=" +
+        encodeURIComponent(match[1]) +
+        "&sz=w1200"
+      );
+    }
+    match = url.match(
+      /[?&]id=([^&]+)/
+    );
+    if (match && match[1]) {
+      return (
+        "https://drive.google.com/thumbnail?id=" +
+        encodeURIComponent(match[1]) +
+        "&sz=w1200"
+      );
+    }
+    return url;
     }
 
     function normalizeImageList(value) {
@@ -1985,27 +1978,30 @@ function PMApprovalPage({
         list = value;
       } else {
         list =
-        String(value).split(/[\n,]+/).map(item => item.trim()).filter(Boolean);
+        String(value)
+        .split(/[\n,]+/)
+        .map(item => item.trim())
+        .filter(Boolean);
       }
-      return list.map(item => normalizeImageUrl(item)).filter(Boolean);
+      return list
+      .map(item => normalizeImageUrl(item))
+      .filter(Boolean);
       }
   
   const beforeImages =
   normalizeImageList(
-    job.beforeImages?.length
-    ? job.beforeImages
-    : job.images
+    job.beforeImages ||
+    job.images ||
+    ""
   );
 
   const afterImages =
   normalizeImageList(
-    job.afterImages?.length
-    ? job.afterImages
-    : job.completion?.afterImages?.length
-    ? job.completion.afterImages
-    : job.completion?.images?.length
-    ? job.completion.images
-    : job.completion?.finishImages
+   job.afterImages ||
+   job.completion?.afterImages ||
+   job.completion?.images ||
+   job.completion?.finishImages ||
+   ""
   );
   const safeApprovalImages =
   Array.isArray(approvalImages)
@@ -2759,9 +2755,21 @@ function getDisplayImageUrl(url) {
               รูปภาพจากผู้แจ้ง
             </div>
             
-              {job.images?.length > 0 ? (
+              {Array.isArray(job.images) && job.images.length > 0 ? (
                 <div className="grid grid-cols-2 gap-3">
-                  {job.images.map((img,index) =>( 
+                  {job.images.map((img,index) => {
+                    const imageUrl =
+                    typeof img === "string"
+                    ? getDisplayImageUrl(img)
+                    : getDisplayImageUrl(
+                      img?.url ||
+                      img?.data ||
+                      ""
+                    );
+                    if (!imageUrl) {
+                      return null;
+                    } 
+                    return (
               <img
               key = {index}
               src = {img}
@@ -2777,10 +2785,19 @@ function getDisplayImageUrl(url) {
               bg-gray-50
               cursor-pointer"
               onClick={() => {
-              window.open(img, "_blank");
+              window.open(imageUrl, "_blank");
+              }}
+              onError={(e) => {
+                console.error(
+                  "Image load failed:",
+                  imageUrl
+                );
+                e.currentTarget.style.display =
+                "none";
               }}
               />
-            ))}
+            );
+        })}
             </div>
             ) : (
               <div className="text-gray-400 text-sm">
