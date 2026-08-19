@@ -1470,7 +1470,6 @@ role={profile?.role}
         function BottomNavigation({page, setPage, role}) {
 
           const isTech = role === "TECHNICIAN";
-          const isPM = role === "PM";
           const isAdmin = role === "ADMIN";
         
           const menus = [
