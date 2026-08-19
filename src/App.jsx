@@ -1,4 +1,5 @@
 import React, { act, useEffect, useMemo, useState} from "react";
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 const CONFIG = {
     LIFF_ID: "2010077744-5kECosJ0",
@@ -1029,6 +1030,7 @@ page={currentPage}
 setPage={setCurrentPage}
 role={profile?.role}
 />
+<SpeedInsights />
 </div>
     );
   }
@@ -2341,7 +2343,7 @@ function PMApprovalPage({
       font-bold
       disabled:bg-gray-400">
         {loading
-        ? "กำลังบันทึก..."
+        ? "กำลังบั���ทึก..."
       : "✓ อนุมัติ"}
       </button>
     </div>
