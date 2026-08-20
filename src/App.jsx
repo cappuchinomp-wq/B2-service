@@ -218,7 +218,9 @@ export default function B2Service() {
     const [finishJob, setFinishJob] = React.useState(null);
     const [finishImages, setFinishImages] = React.useState([]);
     const [finishForm, setFinishForm] = React.useState({
+      cause: "",
       workDone: "",
+      parts: "",
       note: ""
     });
     const [images, setImages] = useState([]);
@@ -380,7 +382,9 @@ export default function B2Service() {
     }
     setFinishJob(job);
     setFinishForm({
+      cause: "",
       workDone: "",
+      parts: "",
       note: ""
     });
     setFinishImages([]);
@@ -463,6 +467,10 @@ async function submitFinishWork() {
     alert("ไม่พบข้อมูลงาน");
     return;
   }
+  if (!finishForm.cause.trim()) {
+    alert("กรุณาระบุสาเหตุปัญหา");
+    return;
+  }
   if (!finishForm.workDone.trim()) {
     alert("กรุณาระบุงานที่ดำเนินการ");
     return;
@@ -486,7 +494,9 @@ async function submitFinishWork() {
       wo: finishJob.wo,
       userId: profile?.userId || "",
       staff: profile?.displayName || "",
+      cause: finishForm.cause || "",
       workDone: finishForm.workDone,
+      parts: finishForm.parts || "",
       note: finishForm.note,
       images: finishImages
     });
@@ -1335,7 +1345,9 @@ role={profile?.role}
           }
 
           const safeFinishForm = finishForm || {
+            cause: "",
             workDone: "",
+            parts: "",
             note: ""
           };
 
@@ -1360,6 +1372,33 @@ role={profile?.role}
               </div>
               <div className="bg-white rounded-3xl p-5 shadow-sm mb-4">
                 <label className="block text-sm font-bold text-gray-700 mb-2">
+                  สาเหตุปัญหา
+                </label>
+                <textarea
+                rows={4}
+                value={safeFinishForm.cause}
+                onChange={(e) =>
+                  onChange(
+                    "cause",
+                    e.target.value
+                  )
+                }
+                disabled={loading}
+                placeholder="ระบุสาเหตุของปัญหา"
+                className="
+                w-full
+                border
+                rounded-2xl
+                p-4
+                resize-none
+                focus:outline-none
+                focus:ring-2
+                focus:rising-green-500
+                disabled:bg-gray-100
+                "/>
+              </div>
+              <div className="bg-white rounded-3xl p-5 shadow-sm mb-4">
+                <label className="block text-sm font-bold text-gray-700 mb-2">
                   งานดำเนินการ
                 </label>
             <textarea
@@ -1380,6 +1419,34 @@ role={profile?.role}
             focus:ring-2
             focus:ring-green-500
             disabled:bg-gray-100"/>
+              </div>
+              <div className="bg-white rounded-3xl p-5 shadow-sm mb-4">
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  อะไหล่ที่ใช้
+                </label>
+
+                <textarea
+                rows={4}
+                value={safeFinishForm.parts}
+                onChange={(e) =>
+                  onChange(
+                    "parts",
+                    e.target.value
+                  )
+                }
+                disabled={loading}
+                placeholder="ระบุอะไหล่หรือวัสดุที่ใช้ เช่น หลอดไฟ LED 12W, สายไฟ"
+                className="
+                w-full
+                border
+                rounded-2xl
+                p-4
+                resize-none
+                focus:outline-none
+                focus:ring-2
+                focus:ring-green-500
+                disabled:bg-gray-100
+                "/>
               </div>
               <div className="bg-white rounded-3xl p-5 shadow-sm mb-4">
                 <label className="block text-sm font-bold text-gray-700 mb-3">
