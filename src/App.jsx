@@ -1,4 +1,4 @@
-import React, { act, useEffect, useMemo, useState} from "react";
+import React, { act, use, useEffect, useMemo, useState} from "react";
 
 const CONFIG = {
     LIFF_ID: "2010077744-5kECosJ0",
@@ -211,6 +211,7 @@ export default function B2Service() {
       quality: "",
       remark: ""
     });
+    const [approvalResult, setApprovalResult] = useState(null);
     const [approvalImages, setApprovalImages] = useState([]);
     const [form, setForm] = useState(DEFAULT_FORM);
     const [selectedIssue, setSelectedIssue] = useState('');
@@ -611,6 +612,23 @@ async function submitFinishWork() {
         setSelectedJob(detail.data);
       }
 
+      const now = new Date();
+      const datetimeText = now.toLocaleDateString("th-TH", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      }) + " " + now.toLocaleDateString("th-TH", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+      setApprovalResult({
+        wo: selectedJob.wo,
+        room: selectedJob.room || detail?.data?.room || "",
+        status: result,
+        datetime: response.datetime || datetimeText
+      });
+
       setApprovalForm({
         quality: "",
         remark: ""
@@ -618,14 +636,8 @@ async function submitFinishWork() {
 
       setApprovalImages([]);
 
-      setCurrentPage("PM");
+      setCurrentPage("PM_RESULT");
 
-      alert(
-        result === "อนุมัติ"
-        ? "อนุมัติงานเรียบร้อย"
-        : "ตีกลับงานเรียบร้อย"
-      );
-      
     } catch (error) {
       console.error(
         "submitPMApproval error:",
@@ -857,6 +869,54 @@ function resizeImage(file) {
       setCurrentPage("PM");
     }
 
+
+  function ApprovalResultPage({
+    result,
+    onBack
+  }) {
+    if (!result) return null;
+
+    const isApproved = result.status === "อนุมัติ";
+
+    return (
+      <div className="p-4 flex items-center justify-center min-h-screen">
+        <div className="bg-white rounded-3xl p-8 text-center shadow-sm w-full max-w-sm">
+          <div className="flex justify-center mb-4">
+            <div className={`
+            w-20 h-20 rounded-full flex items-center justify-center
+            ${isApproved ? "bg-green-500" : "bg-red-500"}`}>
+              <span className="text-white text-4xl">
+                {isApproved ? "✓" : "↩"}
+              </span>
+            </div>
+          </div>
+          <div className={`text-xl font-bold mb-1 ${isApproved ? "text-green-600" : "text-red-600"}`}>
+            {isApproved ? "ตรวจรับผ่าน" : "ตีกลับงาน"}
+          </div>
+          {result.room && (
+            <div className="text-gray-500 mb-4">
+              ห้อง {result.room} {isApproved ? "พร้อมขาย" : ""}
+              </div>
+          )}
+          <div className="text-sm text-gray-700 space-y-1 mb-6">
+            <div className="font-semibold">{result.wo}</div>
+            <div>
+              {isApproved ? "ดำเนินการเสร็จสิ้น" : "ส่งกลับให้ช่างแก้ไข"}
+            </div>
+            <div>{result.dateline}</div>
+          </div>
+          <button
+          type="button"
+          onClick={onBack}
+          className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl">
+            กลับหน้าหลัก
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+
     function openPMApproval(job) {
       if (!job) {
         alert("ไม่พบข้อมูลงาน");
@@ -1023,6 +1083,14 @@ function resizeImage(file) {
     : null
 )}
 
+{currentPage === "PM_RESULT" && (
+  <ApprovalResultPage
+  result={approvalResult}
+  onBack={() => {
+    setApprovalResult(null);
+    setCurrentPage("PM");
+  }}/>
+)}
 </div>
 <BottomNavigation
 page={currentPage}
