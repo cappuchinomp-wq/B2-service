@@ -230,6 +230,8 @@ export default function B2Service() {
     const isPM = profile?.role === "PM" ||
     profile?.role === "ADMIN";
     const canAccessPM = isPM || isAdmin;
+    const isGM = profile?.role === "GM";
+    const canAccessDashboard = isPM || isGM || isAdmin;
 
     useEffect(() => {
       checkLogin();
@@ -879,6 +881,14 @@ function resizeImage(file) {
       setCurrentPage("PM");
     }
 
+    function openDashboardPage() {
+      if (!canAccessDashboard) {
+        alert("คุณไม่มีสิทธิ์เข้าถึง Dashboard");
+        return;
+      }
+      setCurrentPage("DASHBOARD");
+    }
+
 
   function ApprovalResultPage({
     result,
@@ -1100,6 +1110,23 @@ function resizeImage(file) {
     setApprovalResult(null);
     setCurrentPage("PM");
   }}/>
+)}
+
+{currentPage === "DASHBOARD" && (
+  canAccessDashboard
+  ? (
+    <DashboardPage
+    jobs={jobs}
+    loading={loading}
+    onRefresh={loadWorkOrders}/>
+  ) : (
+    <div className="p-6 text-center">
+      <div className="text-5xl mb-3">🔒</div>
+      <div className="font-bold text-gray-700">
+        ไม่มีสิทธิ์เข้าถึง
+        </div>
+        </div>
+  )
 )}
 </div>
 <BottomNavigation
@@ -1606,6 +1633,7 @@ role={profile?.role}
 
           const isTech = role === "TECHNICIAN";
           const isPM = role === "PM";
+          const isGM = role === "GM";
           const isAdmin = role === "ADMIN";
         
           const menus = [
@@ -1624,6 +1652,14 @@ role={profile?.role}
               : "งาน"
             }
           ];
+
+          if (isPM || isGM || isAdmin) {
+            menus.push({
+              page: "DASHBOARD",
+              icon: "📊",
+              label: "Dashboard"
+            });
+          }
           
           if (isPM || isAdmin) {
             menus.push({
@@ -2018,6 +2054,113 @@ function PMPage({
       )}
     </div>
   );
+} 
+
+function DashboardPage({jobs, loading, onRefresh}) {
+  const total = jobs.length;
+  const inProgress = jobs.filter(j =>
+  ["รับงานแล้ว", "กำลังดำเนินการ", "ปิดงานแล้ว"].includes(
+    (j.status || "").trim()
+  )
+  ).length;
+  const pendingApproval = jobs.filter(j =>
+  (j.status || "").trim() === "รอตรวจรับ"
+  ).length;
+  const completed = jobs.filter(j =>
+  (j.status || "").trim() === "เสร็จสิ้น"
+  ).length;
+  const slaPercent =
+  total > 0 ? Math.round((completed / total) * 100) : 0;
+const today = new Date().toLocaleDateString("th-TH", {
+  day: "2-digit",
+  month: "long",
+  year: "numeric"
+});
+return (
+  <div className="p-4 pb-24">
+    <div className="flex items-center justify-between mb-5">
+      <h2 className="text-2xl font-bold">Dashboard</h2>
+      <button
+      type="button"
+      onClick={onRefresh}
+      disabled={loading}
+      className="
+      text-sm
+      bg-gray-100
+      text-gray-600
+      px-3
+      py-2
+      rounded-xl
+      disabled:opacity-50">
+        {loading ? "กำลังโหลด..." : today}
+      </button>
+    </div>
+    <div className="grid grid-cols-2 gap-3 mb-4">
+      <div className="bg-white rounded-2xl p-4 shadow-sm">
+        <div className="text-sm text-gray-500">
+          งานทั้งหมด
+        </div>
+        <div className="text-2xl font-bold mt-1">
+          {total}
+        </div>
+      </div>
+      <div className="bg-white rounded-2xl p-4 shadow-sm">
+        <div className="text-sm text-gray-500">
+          กำลังดำเนินการ
+        </div>
+        <div className="text-2xl fount-bold text-blue-600 mt-1">
+          {inProgress}
+        </div>
+      </div>
+      <div className="bg-white rounded-2xl p-4 shadow-sm">
+        <div className="text-sm text-gray-500">
+          รอตรวจรับ
+        </div>
+        <div className="text-2xl font-bold text-orange-500 mt-1">
+          {pendingApproval}
+        </div>
+      </div>
+      <div className="bg-white rounded-2xl p-4 shadow-sm">
+        <div className="text-sm text-gray-500">
+          เสร็จสิ้น
+        </div>
+        <div className="text-2xl font-bold text-green-600 mt-1">
+          {completed}
+        </div>
+      </div>
+    </div>
+
+    <div className="bg-white rounded-3xl p-5 shadow-sm">
+      <h3 className="font-bold mb-4">
+        SLA Compliance
+      </h3>
+      <div className="flex items-center gap-5">
+        <div className="w-24 h-24 rounded-full flex items-center justify-center shrink-0"
+        style={{
+          background: `conic-gradient(#16a34a ${slaPercent * 3.6}deg, #e5e7eb 0deg)`
+        }}>
+          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center font-bold text-green-600">
+            {slaPercent}%
+          </div>
+        </div>
+        <div className="text-sm text-gray-600 space-y-1">
+          <div>
+            ผ่าน{" "}
+            <span className="font-bold text-gray-800">
+              {completed} / {total}
+            </span>
+          </div>
+          <div>
+            ทั้งหมด{" "}
+            <span className="font-bold text-gray-800">
+              {total}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 }
 
 function PMApprovalPage({
