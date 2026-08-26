@@ -279,13 +279,11 @@ export default function B2Service() {
 
     async function checkLogin() {
 
-      const cache = localStorage.getItem("login");
-      if (!cache) return;
-      const user = JSON.parse(cache);
-      setProfile(user);
-      setAuthenticated(true);
-
-      await loadWorkOrders();
+      const cache = localStorage.removeItem("login");
+      
+      setProfile(null);
+      setAuthenticated(false);
+      setCurrentPage("HOME");
       
     }
 
@@ -847,10 +845,6 @@ function resizeImage(file) {
           setAuthenticated(true);
           setCurrentPage("HOME");
 
-          localStorage.setItem (
-            "login",
-            JSON.stringify(user)
-          );
           await loadWorkOrders();
         }}/>
       );
@@ -2646,11 +2640,6 @@ function LoginPage({onLogin}){
         return;
       }
 
-      localStorage.setItem (
-        "login",
-        JSON.stringify(result.data)
-      );
-
       onLogin (result.data);
     }catch(err){
       console.error(err);
@@ -2658,7 +2647,6 @@ function LoginPage({onLogin}){
     }finally{
       setLoading(false);
     }
-    
   }
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
