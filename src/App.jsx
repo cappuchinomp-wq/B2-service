@@ -249,23 +249,9 @@ export default function B2Service() {
         job => (job.priority || "").includes("Critical")
       ).length;
       const complete =
-      jobs.filter(j=>j.status==="เสร็จสิ้น").length;
-      const total=jobs.length;
+      jobs.filter(job => job.status==="เสร็จสิ้น").length;
 
-      if (loading) {
-        return (
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="text-center">
-              <div className="animate-spin text-5xl">
-                ⚙️
-              </div>
-              <p className="mt-4">
-                กำลังโหลด...
-              </p>
-            </div>
-            </div>
-        );
-      }
+      const total=jobs.length;
 
       return {
         pending,
@@ -308,15 +294,21 @@ export default function B2Service() {
     async function loadWorkOrders() {
       
       try {
+        setLoading(true);
         const result =
         await apiService.getWorkOrders();
         if (!result.success) {
-          throw new Error(result.message);
+          throw new Error(result.message || "ไม่สามารถโหลดข้อมูลงานได้");
         }
-        setJobs(result.data ?? []);
+        setJobs(
+          Array.isArray(result.data)
+          ? result.data
+          : []);
       } catch (error) {
-        console.error(error);
+        console.error("loadWorkOrders error:", error);
         setJobs([]);
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -1128,6 +1120,10 @@ page={currentPage}
 setPage={setCurrentPage}
 role={profile?.role}
 />
+
+{loading && (
+  <LoadingScreen />
+)}
 </div>
     );
   }
@@ -2618,6 +2614,24 @@ function PMApprovalPage({
       </button>
     </div>
     </div>
+  );
+}
+
+function LoadingScreen({ text = "กำลังโหลด..."}) {
+  return (
+    <div className="fixed inset-0 z-[9999] bg-black/20 backdrop-blur-[1px] flex items-center justify-center">
+      <div className="bg-white rounded-3xl shadow-xl px-8 py-7 text-center min-w-[220px]">
+        <div className="flex justify-center mb-4">
+          <div className="w-10 h-10 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+          </div>
+          <div className="font-bold text-gray-700">
+            {text}
+          </div>
+          <div className="text-sm text-gray-400 mt-1">
+            กรุณาราสักครู่...
+          </div>
+        </div>
+      </div>
   );
 }
 
