@@ -329,7 +329,7 @@ export default function B2Service() {
         const detail =
         await apiService.getWorkOrderDetail(job.wo);
         setSelectedJob(detail.data);
-        alert("รับงานเรียบร้อย");
+        //alert("รับงานเรียบร้อย");
       }catch(err){
         alert(err.message);
       }finally{
@@ -357,7 +357,7 @@ export default function B2Service() {
 
       setSelectedJob(detail.data);
 
-      alert("เริ่มงานแล้ว");
+      //alert("เริ่มงานแล้ว");
     }catch(err){
       alert(err.message);
     }finally{
@@ -512,7 +512,7 @@ async function submitFinishWork() {
     });
 
     setCurrentPage("DETAIL");
-    alert("ปิดงานเรียบร้อย");
+    //alert("ปิดงานเรียบร้อย");
   } catch (err) {
     console.error("submitFinishWork error:", err);
     alert(
@@ -543,7 +543,7 @@ async function submitFinishWork() {
       await apiService.getWorkOrderDetail(job.wo);
 
       setSelectedJob(detail.data);
-      alert("ส่งตรวจรับเรียบร้อย");
+      //alert("ส่งตรวจรับเรียบร้อย");
     }catch(err){
       alert(err.message);
     }finally{
@@ -801,7 +801,7 @@ function resizeImage(file) {
           );
         }
 
-        alert(`แจ้งซ่อมสำเร็จ\n${result.woCode}`);
+        //alert(`แจ้งซ่อมสำเร็จ\n${result.woCode}`);
 
         resetForm();
 
