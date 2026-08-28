@@ -2047,16 +2047,110 @@ function PMPage({
 } 
 
 function DashboardPage({jobs, loading, onRefresh}) {
-  const total = jobs.length;
-  const inProgress = jobs.filter(j =>
+
+  const [dateForm, setDateFrom] = React.useState("");
+  const [dateTo, setDateTo] = React.useState("");
+  const getJobDate = (job) => {
+    if (!job) return null;
+
+    const rawDate =
+    job.date ??
+    job.work_date ??
+    job.wo_date ??
+    job.created_date ??
+    job.createdAt ??
+    job.created_at ??
+    job.date_created ??
+    null;
+
+    if (!rawDate) return null;
+
+    if (rawDate instanceof Date && !isNaN(rawDate.getTime())) {
+      const year = rawDate.getFullYear();
+      const month = String(rawDate.getMonth() + 1).padStart(2, "0");
+      const day = String(rawDate.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    const value = String(rawDate).trim();
+    if (!value) return null;
+    const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+    if (isoMatch) {
+      return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+    }
+    const thaiDateMatch = value.match(
+      /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
+    );
+
+    if (thaiDateMatch) {
+      let day = Number(thaiDateMatch[1]);
+      let month = Number(thaiDateMatch[2]);
+      let year = Number(thaiDateMatch[3]);
+    
+      if (year > 2400) {
+        year -= 543;
+      }
+
+      return [
+        year,
+        String(month).padStart(2, "0"),
+        String(day).padStart(2, "0")
+      ].join("-");
+    }
+
+    const parsed = new Date(value);
+
+    if (!isNaN(parsed.getTime())) {
+      const year = parsed.getFullYear();
+      const month = String(
+        parsed.getMonth() + 1
+      ).padStart(2, "0");
+
+      const day = String(
+        parsed.getDate()
+      ).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    }
+    return null;
+  };
+  const filteredJobs = React.useMemo(() => {
+    if (!dateForm && !dateTo) {
+      return jobs;
+    }
+    return jobs.filter((job) => {
+      const jobDate = getJobDate(job);
+      if (!jobDate) {
+        return false;
+      }
+      if (dateForm && jobDate < dateForm) {
+        return false;
+      }
+      if (dateTo && jobDate > dateTo) {
+        return false;
+      }
+      return true;
+    });
+  }, [jobs, dateForm, dateTo]);
+
+  const isInvalidDateRange =
+  dateForm &&
+  dateTo &&
+  dateForm > dateTo;
+const dashboardJobs = isInvalidDateRange
+? []
+: filteredJobs;
+  const total = dashboardJobs.length;
+  const inProgress = dashboardJobs.filter(j =>
   ["รับงานแล้ว", "กำลังดำเนินการ", "ปิดงานแล้ว"].includes(
     (j.status || "").trim()
   )
   ).length;
-  const pendingApproval = jobs.filter(j =>
+  const pendingApproval = dashboardJobs.filter(j =>
   (j.status || "").trim() === "รอตรวจรับ"
   ).length;
-  const completed = jobs.filter(j =>
+  const completed = dashboardJobs.filter(j =>
   (j.status || "").trim() === "เสร็จสิ้น"
   ).length;
   const slaPercent =
@@ -2066,6 +2160,11 @@ const today = new Date().toLocaleDateString("th-TH", {
   month: "long",
   year: "numeric"
 });
+const resetDateFilter = () => {
+  setDateFrom("");
+  setDateTo("");
+};
+
 return (
   <div className="p-4 pb-24">
     <div className="flex items-center justify-between mb-5">
@@ -2085,6 +2184,33 @@ return (
         {loading ? "กำลังโหลด..." : today}
       </button>
     </div>
+    <div className="bg-white rounded-2xl p-4 shadow-sm mb-4">
+      <div className="text-sm font-bold text-gray-700 mb-3">📅 Filter วันที่
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label className="block text-sm text-gray-500 mb-1">ตั้งแต่วันที่
+            </label>
+            <input type="date" value={dateForm} onChange={(e) => setDateFrom(e.target.value)}
+            className="w-full border border-gray-200 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-green-500"/>
+          </div>
+        <div>
+          <label className="block text-sm text-gray-500 mb-1">ถึงวันที่</label>
+          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
+          className="w-full border border-gray-200 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-green-500"/>
+        </div>
+        <div className="flex items-end">
+          <button type="button" onClick={resetDateFilter} disabled={!dateForm && !dateTo}
+          className="w-full bg-gray-100 text-gray-700 px-3 py-2 rounded-xl disabled:opacity-40">↻ รีเซ็ต</button>
+        </div>
+        </div>
+        {isInvalidDateRange && (
+          <div className="mt-3 text-sm text-red-500">⚠️ วันที่เริ่มต้นต้องไม่มากกว่าวันที่สิ้นสุด</div>
+        )}
+        {!isInvalidDateRange && (dateForm || dateTo) && (
+          <div className="mt-3 text-sm text-gray-500">พบข้อมูล{" "}
+          <span className="font-bold text-gray-800">{total}</span>{" "}รายการ</div>
+        )}
+      </div>
     <div className="grid grid-cols-2 gap-3 mb-4">
       <div className="bg-white rounded-2xl p-4 shadow-sm">
         <div className="text-sm text-gray-500">
@@ -2098,7 +2224,7 @@ return (
         <div className="text-sm text-gray-500">
           กำลังดำเนินการ
         </div>
-        <div className="text-2xl fount-bold text-blue-600 mt-1">
+        <div className="text-2xl font-bold text-blue-600 mt-1">
           {inProgress}
         </div>
       </div>
@@ -2119,20 +2245,14 @@ return (
         </div>
       </div>
     </div>
-
     <div className="bg-white rounded-3xl p-5 shadow-sm">
-      <h3 className="font-bold mb-4">
-        SLA Compliance
-      </h3>
+      <h3 className="font-bold mb-4">SLA Compliance</h3>
       <div className="flex items-center gap-5">
         <div className="w-24 h-24 rounded-full flex items-center justify-center shrink-0"
-        style={{
-          background: `conic-gradient(#16a34a ${slaPercent * 3.6}deg, #e5e7eb 0deg)`
-        }}>
-          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center font-bold text-green-600">
-            {slaPercent}%
-          </div>
+        style={{background:`conic-gradient(#16a34a ${slaPercent * 3.6}deg, #e5e7eb 0deg)`}}>
+          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center font-bold text-green-600">{slaPercent}%</div>
         </div>
+      </div>
         <div className="text-sm text-gray-600 space-y-1">
           <div>
             ผ่าน{" "}
